@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, User, TrendingDown, TrendingUp, Scale, Activity, Plus, BarChart3 } from "lucide-react";
+import { ArrowLeft, TrendingDown, TrendingUp, Scale, Activity, Plus, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import ComparativeCharts from "@/components/ComparativeCharts";
+import reneerAvatar from "@/assets/reneer-avatar.png";
+import anaPaulaAvatar from "@/assets/ana-paula-avatar.png";
 
 interface UserSummary {
   name: string;
@@ -112,7 +114,7 @@ const SelectUser = () => {
     const isReneer = person === "reneer";
     const primaryColor = isReneer ? 'hsl(217, 91%, 60%)' : 'hsl(340, 82%, 62%)';
     const bgClass = isReneer ? 'bg-reneer-primary' : 'bg-ana-paula-primary';
-    const bgLightClass = isReneer ? 'bg-blue-100 text-blue-600' : 'bg-rose/20 text-rose';
+    const avatar = isReneer ? reneerAvatar : anaPaulaAvatar;
     
     return (
       <Card 
@@ -122,9 +124,11 @@ const SelectUser = () => {
         <div className={`h-1 ${bgClass}`} />
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
-            <div className={`w-14 h-14 rounded-full flex items-center justify-center ${bgLightClass}`}>
-              <User className="w-7 h-7" />
-            </div>
+            <img 
+              src={avatar} 
+              alt={isReneer ? "Reneer" : "Ana Paula"} 
+              className={`w-14 h-14 rounded-full object-cover ring-2 ring-offset-2 ring-offset-background ${isReneer ? 'ring-reneer-primary' : 'ring-ana-paula-primary'}`}
+            />
             <div>
               <CardTitle className={`text-2xl font-serif group-hover:${isReneer ? 'text-reneer-primary' : 'text-ana-paula-primary'} transition-colors`}>
                 {data?.name || (isReneer ? "Reneer" : "Ana Paula")}
