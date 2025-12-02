@@ -146,25 +146,74 @@ const Dashboard = () => {
         </div>
 
         {/* Summary Cards */}
-        {records.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8 animate-slide-up">
-            {[
-              { label: "Peso Atual", value: `${Number(records[records.length - 1].weight).toFixed(1)} kg`, color: "text-foreground" },
-              { label: "IMC", value: Number(records[records.length - 1].bmi).toFixed(1), color: "text-foreground" },
-              { label: "Gordura", value: `${Number(records[records.length - 1].body_fat_percent).toFixed(1)}%`, color: "text-coral" },
-              { label: "Músculo", value: `${Number(records[records.length - 1].muscle_rate_percent).toFixed(1)}%`, color: "text-success" },
-              { label: "G. Visceral", value: Number(records[records.length - 1].visceral_fat).toFixed(0), color: "text-warning" },
-              { label: "Idade Met.", value: `${records[records.length - 1].metabolic_age} anos`, color: "text-foreground" },
-            ].map((item, i) => (
-              <Card key={i} className="card-elevated border-0">
-                <CardContent className="p-4 text-center">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">{item.label}</p>
-                  <p className={`text-2xl font-serif font-bold ${item.color}`}>{item.value}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        {records.length > 0 && (() => {
+          const latest = records[records.length - 1];
+          const first = records[0];
+          
+          // Helper to determine performance color and background
+          const getPerformanceStyle = (current: number, initial: number, lowerIsBetter: boolean) => {
+            const diff = current - initial;
+            const threshold = Math.abs(initial * 0.01); // 1% threshold for "stagnant"
+            
+            if (Math.abs(diff) <= threshold) {
+              return { bg: "bg-warning", text: "text-warning-foreground" }; // Yellow - stagnant
+            }
+            if (lowerIsBetter) {
+              return diff < 0 
+                ? { bg: "bg-success", text: "text-success-foreground" } // Green - improved
+                : { bg: "bg-destructive", text: "text-destructive-foreground" }; // Red - worse
+            }
+            return diff > 0 
+              ? { bg: "bg-success", text: "text-success-foreground" } // Green - improved
+              : { bg: "bg-destructive", text: "text-destructive-foreground" }; // Red - worse
+          };
+
+          const summaryItems = [
+            { 
+              label: "Peso Atual", 
+              value: `${Number(latest.weight).toFixed(1)} kg`,
+              ...getPerformanceStyle(Number(latest.weight), Number(first.weight), true)
+            },
+            { 
+              label: "IMC", 
+              value: Number(latest.bmi).toFixed(1),
+              ...getPerformanceStyle(Number(latest.bmi), Number(first.bmi), true)
+            },
+            { 
+              label: "Gordura", 
+              value: `${Number(latest.body_fat_percent).toFixed(1)}%`,
+              ...getPerformanceStyle(Number(latest.body_fat_percent), Number(first.body_fat_percent), true)
+            },
+            { 
+              label: "Músculo", 
+              value: `${Number(latest.muscle_rate_percent).toFixed(1)}%`,
+              ...getPerformanceStyle(Number(latest.muscle_rate_percent), Number(first.muscle_rate_percent), false)
+            },
+            { 
+              label: "G. Visceral", 
+              value: Number(latest.visceral_fat).toFixed(0),
+              ...getPerformanceStyle(Number(latest.visceral_fat), Number(first.visceral_fat), true)
+            },
+            { 
+              label: "Idade Met.", 
+              value: `${latest.metabolic_age} anos`,
+              ...getPerformanceStyle(Number(latest.metabolic_age), Number(first.metabolic_age), true)
+            },
+          ];
+
+          return (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8 animate-slide-up">
+              {summaryItems.map((item, i) => (
+                <Card key={i} className={`card-elevated border-0 ${item.bg}`}>
+                  <CardContent className="p-4 text-center">
+                    <p className={`text-xs uppercase tracking-wide mb-1 ${item.text} opacity-80`}>{item.label}</p>
+                    <p className={`text-2xl font-serif font-bold ${item.text}`}>{item.value}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* Charts */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -247,6 +296,21 @@ const Dashboard = () => {
                     <TableBody>
                       {records.map((record, i) => {
                         const isHiato = record.status?.includes("HIATO");
+                        const prev = i > 0 ? records[i - 1] : null;
+                        
+                        // Get cell color based on evolution
+                        const getCellColor = (current: number | null, previous: number | null, lowerIsBetter: boolean) => {
+                          if (!prev || current === null || previous === null) return "";
+                          const diff = current - previous;
+                          const threshold = Math.abs(previous * 0.005); // 0.5% threshold
+                          
+                          if (Math.abs(diff) <= threshold) return "bg-warning/30 text-warning-foreground"; // Yellow - stagnant
+                          if (lowerIsBetter) {
+                            return diff < 0 ? "bg-success/30 text-success" : "bg-destructive/30 text-destructive"; 
+                          }
+                          return diff > 0 ? "bg-success/30 text-success" : "bg-destructive/30 text-destructive";
+                        };
+                        
                         return (
                           <TableRow 
                             key={record.id} 
@@ -255,21 +319,51 @@ const Dashboard = () => {
                             <TableCell className="font-semibold">{record.week_number} {isHiato && '⚠️'}</TableCell>
                             <TableCell>{record.monjaro_dose} mg</TableCell>
                             <TableCell>{record.status}</TableCell>
-                            <TableCell className="font-semibold">{Number(record.weight).toFixed(1)}</TableCell>
-                            <TableCell>{Number(record.bmi).toFixed(1)}</TableCell>
-                            <TableCell>{Number(record.body_fat_percent).toFixed(1)}%</TableCell>
-                            <TableCell>{Number(record.fat_mass).toFixed(1)}</TableCell>
-                            <TableCell>{Number(record.lean_mass).toFixed(1)}</TableCell>
-                            <TableCell>{Number(record.muscle_mass).toFixed(1)}</TableCell>
-                            <TableCell>{Number(record.muscle_rate_percent).toFixed(1)}%</TableCell>
-                            <TableCell>{Number(record.bone_mass).toFixed(1)}</TableCell>
-                            <TableCell>{Number(record.protein_percent).toFixed(1)}%</TableCell>
-                            <TableCell>{Number(record.body_water_percent).toFixed(1)}%</TableCell>
-                            <TableCell>{Number(record.subcutaneous_fat_percent).toFixed(1)}%</TableCell>
-                            <TableCell>{Number(record.visceral_fat).toFixed(0)}</TableCell>
-                            <TableCell>{record.bmr}</TableCell>
-                            <TableCell>{record.metabolic_age}</TableCell>
-                            <TableCell>{Number(record.whr).toFixed(2)}</TableCell>
+                            <TableCell className={`font-semibold ${getCellColor(Number(record.weight), prev ? Number(prev.weight) : null, true)}`}>
+                              {Number(record.weight).toFixed(1)}
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.bmi), prev ? Number(prev.bmi) : null, true)}>
+                              {Number(record.bmi).toFixed(1)}
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.body_fat_percent), prev ? Number(prev.body_fat_percent) : null, true)}>
+                              {Number(record.body_fat_percent).toFixed(1)}%
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.fat_mass), prev ? Number(prev.fat_mass) : null, true)}>
+                              {Number(record.fat_mass).toFixed(1)}
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.lean_mass), prev ? Number(prev.lean_mass) : null, false)}>
+                              {Number(record.lean_mass).toFixed(1)}
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.muscle_mass), prev ? Number(prev.muscle_mass) : null, false)}>
+                              {Number(record.muscle_mass).toFixed(1)}
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.muscle_rate_percent), prev ? Number(prev.muscle_rate_percent) : null, false)}>
+                              {Number(record.muscle_rate_percent).toFixed(1)}%
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.bone_mass), prev ? Number(prev.bone_mass) : null, false)}>
+                              {Number(record.bone_mass).toFixed(1)}
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.protein_percent), prev ? Number(prev.protein_percent) : null, false)}>
+                              {Number(record.protein_percent).toFixed(1)}%
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.body_water_percent), prev ? Number(prev.body_water_percent) : null, false)}>
+                              {Number(record.body_water_percent).toFixed(1)}%
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.subcutaneous_fat_percent), prev ? Number(prev.subcutaneous_fat_percent) : null, true)}>
+                              {Number(record.subcutaneous_fat_percent).toFixed(1)}%
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.visceral_fat), prev ? Number(prev.visceral_fat) : null, true)}>
+                              {Number(record.visceral_fat).toFixed(0)}
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.bmr), prev ? Number(prev.bmr) : null, false)}>
+                              {record.bmr}
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.metabolic_age), prev ? Number(prev.metabolic_age) : null, true)}>
+                              {record.metabolic_age}
+                            </TableCell>
+                            <TableCell className={getCellColor(Number(record.whr), prev ? Number(prev.whr) : null, true)}>
+                              {Number(record.whr).toFixed(2)}
+                            </TableCell>
                           </TableRow>
                         );
                       })}
