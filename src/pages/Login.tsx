@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Heart, Upload, Eye, EyeOff, Smartphone, UserPlus } from "lucide-react";
+import { Heart, Upload, Eye, EyeOff, Smartphone } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const Login = () => {
@@ -13,9 +13,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
-  const { signIn, signUp, user, loading } = useAuth();
+  const { signIn, user, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && user) {
@@ -31,38 +30,19 @@ const Login = () => {
       return;
     }
 
-    if (password.length < 6) {
-      toast.error("A senha deve ter pelo menos 6 caracteres");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
-        const { error } = await signUp(email, password);
-        if (error) {
-          if (error.message.includes("already registered")) {
-            toast.error("Este email já está cadastrado. Tente fazer login.");
-          } else {
-            toast.error(error.message || "Erro ao criar conta");
-          }
+      const { error } = await signIn(email, password);
+      if (error) {
+        if (error.message.includes("Invalid login")) {
+          toast.error("Email ou senha incorretos");
         } else {
-          toast.success("Conta criada com sucesso!");
-          navigate("/selecionar");
+          toast.error(error.message || "Erro ao fazer login");
         }
       } else {
-        const { error } = await signIn(email, password);
-        if (error) {
-          if (error.message.includes("Invalid login")) {
-            toast.error("Email ou senha incorretos");
-          } else {
-            toast.error(error.message || "Erro ao fazer login");
-          }
-        } else {
-          toast.success("Login realizado com sucesso!");
-          navigate("/selecionar");
-        }
+        toast.success("Login realizado com sucesso!");
+        navigate("/selecionar");
       }
     } catch (err) {
       toast.error("Erro inesperado. Tente novamente.");
@@ -96,13 +76,10 @@ const Login = () => {
           <div className="h-1 gradient-primary" />
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-2xl font-serif text-center">
-              {isSignUp ? "Criar Conta" : "Entrar"}
+              Entrar
             </CardTitle>
             <CardDescription className="text-center">
-              {isSignUp 
-                ? "Crie sua conta para acessar" 
-                : "Digite suas credenciais para acessar"
-              }
+              Digite suas credenciais para acessar
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -146,25 +123,9 @@ const Login = () => {
                 className="w-full h-12 rounded-xl gradient-primary hover:opacity-90 transition-opacity text-lg font-medium"
                 disabled={isLoading}
               >
-                {isLoading 
-                  ? (isSignUp ? "Criando conta..." : "Entrando...") 
-                  : (isSignUp ? "Criar Conta" : "Entrar")
-                }
+                {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
-
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                {isSignUp 
-                  ? "Já tem uma conta? Faça login" 
-                  : "Não tem conta? Cadastre-se"
-                }
-              </button>
-            </div>
 
             <div className="mt-6 pt-6 border-t border-border space-y-3">
               <Button
