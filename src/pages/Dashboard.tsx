@@ -150,64 +150,70 @@ const Dashboard = () => {
           const latest = records[records.length - 1];
           const first = records[0];
           
-          // Helper to determine performance color and background
-          const getPerformanceStyle = (current: number, initial: number, lowerIsBetter: boolean) => {
+          // Helper to get performance indicator (arrow and small text)
+          const getPerformanceIndicator = (current: number, initial: number, lowerIsBetter: boolean) => {
             const diff = current - initial;
-            const threshold = Math.abs(initial * 0.01); // 1% threshold for "stagnant"
+            const percent = ((diff / initial) * 100).toFixed(1);
+            const threshold = Math.abs(initial * 0.01);
             
-            if (Math.abs(diff) <= threshold) {
-              return { bg: "bg-warning", text: "text-warning-foreground" }; // Yellow - stagnant
-            }
+            if (Math.abs(diff) <= threshold) return { icon: "→", color: "text-amber-200" };
             if (lowerIsBetter) {
               return diff < 0 
-                ? { bg: "bg-success", text: "text-success-foreground" } // Green - improved
-                : { bg: "bg-destructive", text: "text-destructive-foreground" }; // Red - worse
+                ? { icon: "↓", color: "text-emerald-300" }
+                : { icon: "↑", color: "text-red-300" };
             }
             return diff > 0 
-              ? { bg: "bg-success", text: "text-success-foreground" } // Green - improved
-              : { bg: "bg-destructive", text: "text-destructive-foreground" }; // Red - worse
+              ? { icon: "↑", color: "text-emerald-300" }
+              : { icon: "↓", color: "text-red-300" };
           };
 
           const summaryItems = [
             { 
               label: "Peso Atual", 
               value: `${Number(latest.weight).toFixed(1)} kg`,
-              ...getPerformanceStyle(Number(latest.weight), Number(first.weight), true)
+              bg: "bg-gradient-to-br from-blue-500 to-blue-700",
+              performance: getPerformanceIndicator(Number(latest.weight), Number(first.weight), true)
             },
             { 
               label: "IMC", 
               value: Number(latest.bmi).toFixed(1),
-              ...getPerformanceStyle(Number(latest.bmi), Number(first.bmi), true)
+              bg: "bg-gradient-to-br from-indigo-500 to-indigo-700",
+              performance: getPerformanceIndicator(Number(latest.bmi), Number(first.bmi), true)
             },
             { 
               label: "Gordura", 
               value: `${Number(latest.body_fat_percent).toFixed(1)}%`,
-              ...getPerformanceStyle(Number(latest.body_fat_percent), Number(first.body_fat_percent), true)
+              bg: "bg-gradient-to-br from-rose-500 to-rose-700",
+              performance: getPerformanceIndicator(Number(latest.body_fat_percent), Number(first.body_fat_percent), true)
             },
             { 
               label: "Músculo", 
               value: `${Number(latest.muscle_rate_percent).toFixed(1)}%`,
-              ...getPerformanceStyle(Number(latest.muscle_rate_percent), Number(first.muscle_rate_percent), false)
+              bg: "bg-gradient-to-br from-emerald-500 to-emerald-700",
+              performance: getPerformanceIndicator(Number(latest.muscle_rate_percent), Number(first.muscle_rate_percent), false)
             },
             { 
               label: "G. Visceral", 
               value: Number(latest.visceral_fat).toFixed(0),
-              ...getPerformanceStyle(Number(latest.visceral_fat), Number(first.visceral_fat), true)
+              bg: "bg-gradient-to-br from-amber-500 to-amber-700",
+              performance: getPerformanceIndicator(Number(latest.visceral_fat), Number(first.visceral_fat), true)
             },
             { 
               label: "Idade Met.", 
               value: `${latest.metabolic_age} anos`,
-              ...getPerformanceStyle(Number(latest.metabolic_age), Number(first.metabolic_age), true)
+              bg: "bg-gradient-to-br from-purple-500 to-purple-700",
+              performance: getPerformanceIndicator(Number(latest.metabolic_age), Number(first.metabolic_age), true)
             },
           ];
 
           return (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8 animate-slide-up">
               {summaryItems.map((item, i) => (
-                <Card key={i} className={`card-elevated border-0 ${item.bg}`}>
+                <Card key={i} className={`card-elevated border-0 ${item.bg} shadow-lg`}>
                   <CardContent className="p-4 text-center">
-                    <p className={`text-xs uppercase tracking-wide mb-1 ${item.text} opacity-80`}>{item.label}</p>
-                    <p className={`text-2xl font-serif font-bold ${item.text}`}>{item.value}</p>
+                    <p className="text-xs uppercase tracking-wide mb-1 text-white/80">{item.label}</p>
+                    <p className="text-2xl font-serif font-bold text-white">{item.value}</p>
+                    <span className={`text-xs ${item.performance.color}`}>{item.performance.icon}</span>
                   </CardContent>
                 </Card>
               ))}
