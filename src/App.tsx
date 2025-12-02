@@ -8,6 +8,7 @@ import SelectUser from "./pages/SelectUser";
 import Dashboard from "./pages/Dashboard";
 import AddMeasurement from "./pages/AddMeasurement";
 import Upload from "./pages/Upload";
+import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/dashboard/:person" element={<Dashboard />} />
           <Route path="/adicionar" element={<AddMeasurement />} />
           <Route path="/upload" element={<Upload />} />
+          <Route path="/instalar" element={<Install />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
