@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { 
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   BarChart, Bar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from "recharts";
+import { Sparkles, Loader2, Brain } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ComparisonData {
   reneer: {
@@ -14,6 +18,9 @@ interface ComparisonData {
     bmr: number;
     weightHistory: { week: number; weight: number }[];
     fatHistory: { week: number; fat: number }[];
+    initialWeight?: number;
+    weightChange?: number;
+    measurements?: number;
   };
   anaPaula: {
     weight: number;
@@ -24,6 +31,9 @@ interface ComparisonData {
     bmr: number;
     weightHistory: { week: number; weight: number }[];
     fatHistory: { week: number; fat: number }[];
+    initialWeight?: number;
+    weightChange?: number;
+    measurements?: number;
   };
 }
 
@@ -32,6 +42,49 @@ interface ComparativeChartsProps {
 }
 
 const ComparativeCharts = ({ data }: ComparativeChartsProps) => {
+  const [insights, setInsights] = useState<string | null>(null);
+  const [loadingInsights, setLoadingInsights] = useState(false);
+
+  const generateInsights = async () => {
+    setLoadingInsights(true);
+    try {
+      const { data: result, error } = await supabase.functions.invoke("analyze-comparison", {
+        body: {
+          reneerData: {
+            weight: data.reneer.weight,
+            initialWeight: data.reneer.initialWeight || data.reneer.weightHistory[0]?.weight || data.reneer.weight,
+            weightChange: data.reneer.weightChange || (data.reneer.weight - (data.reneer.weightHistory[0]?.weight || data.reneer.weight)),
+            fat: data.reneer.fat,
+            muscle: data.reneer.muscle,
+            visceralFat: data.reneer.visceralFat,
+            bmi: data.reneer.bmi,
+            bmr: data.reneer.bmr,
+            measurements: data.reneer.measurements || data.reneer.weightHistory.length,
+          },
+          anaPaulaData: {
+            weight: data.anaPaula.weight,
+            initialWeight: data.anaPaula.initialWeight || data.anaPaula.weightHistory[0]?.weight || data.anaPaula.weight,
+            weightChange: data.anaPaula.weightChange || (data.anaPaula.weight - (data.anaPaula.weightHistory[0]?.weight || data.anaPaula.weight)),
+            fat: data.anaPaula.fat,
+            muscle: data.anaPaula.muscle,
+            visceralFat: data.anaPaula.visceralFat,
+            bmi: data.anaPaula.bmi,
+            bmr: data.anaPaula.bmr,
+            measurements: data.anaPaula.measurements || data.anaPaula.weightHistory.length,
+          },
+        },
+      });
+
+      if (error) throw error;
+      setInsights(result.insights);
+    } catch (error) {
+      console.error("Error generating insights:", error);
+      setInsights("Erro ao gerar insights. Tente novamente.");
+    } finally {
+      setLoadingInsights(false);
+    }
+  };
+
   // Combine weight history data
   const combinedWeightData = data.reneer.weightHistory.map((r, i) => ({
     week: r.week,
@@ -69,6 +122,49 @@ const ComparativeCharts = ({ data }: ComparativeChartsProps) => {
         <h2 className="text-2xl font-serif font-bold text-foreground">Comparativo</h2>
         <p className="text-muted-foreground">Reneer vs Ana Paula</p>
       </div>
+
+      {/* AI Insights Section */}
+      <Card className="card-elevated border-0 bg-gradient-to-br from-primary/5 to-accent/5">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="font-serif text-lg flex items-center gap-2">
+              <Brain className="w-5 h-5 text-primary" />
+              Análise de IA
+            </CardTitle>
+            <Button
+              onClick={generateInsights}
+              disabled={loadingInsights}
+              size="sm"
+              className="gap-2"
+            >
+              {loadingInsights ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Analisando...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  {insights ? "Atualizar" : "Gerar Insights"}
+                </>
+              )}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {insights ? (
+            <div className="prose prose-sm max-w-none text-foreground">
+              <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                {insights}
+              </div>
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm text-center py-4">
+              Clique em "Gerar Insights" para obter uma análise personalizada de IA baseada nos dados comparativos.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Weight Evolution Comparison */}

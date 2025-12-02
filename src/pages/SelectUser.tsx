@@ -211,6 +211,9 @@ const SelectUser = () => {
       bmr: reneerData.latestBmr,
       weightHistory: reneerData.chartData,
       fatHistory: reneerData.fatHistory,
+      initialWeight: reneerData.initialWeight,
+      weightChange: reneerData.weightChange,
+      measurements: reneerData.measurements,
     },
     anaPaula: {
       weight: anaPaulaData.latestWeight,
@@ -221,6 +224,9 @@ const SelectUser = () => {
       bmr: anaPaulaData.latestBmr,
       weightHistory: anaPaulaData.chartData,
       fatHistory: anaPaulaData.fatHistory,
+      initialWeight: anaPaulaData.initialWeight,
+      weightChange: anaPaulaData.weightChange,
+      measurements: anaPaulaData.measurements,
     },
   } : null;
 
