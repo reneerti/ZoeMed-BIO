@@ -111,153 +111,126 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
 
   return (
     <TooltipProvider>
-      <div className="relative overflow-hidden rounded-lg border border-slate-600">
-        <div className="flex">
-          {/* Fixed column: Semana only */}
-          <div className="flex-shrink-0 z-10 bg-slate-900 shadow-lg border-r-2 border-violet-500">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-slate-800 hover:bg-slate-800">
-                  <TableHead className="text-white font-bold w-20 text-center">Semana</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {/* Linha 0: Parâmetros */}
-                <TableRow className="bg-violet-800/70 hover:bg-violet-800/70 border-b-2 border-violet-400">
-                  <TableCell className="font-bold text-center text-white">IDEAL</TableCell>
-                </TableRow>
-                {records.map((record, i) => {
-                  const isHiato = record.status?.includes("HIATO");
-                  return (
-                    <TableRow 
-                      key={record.id} 
-                      className={`${isHiato ? 'bg-amber-900/50' : i % 2 === 0 ? 'bg-slate-800' : 'bg-slate-700'} hover:bg-slate-600`}
+      <div className="relative overflow-hidden rounded-lg border border-slate-500 bg-slate-900">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-slate-700 hover:bg-slate-700">
+                <TableHead className="text-yellow-300 font-bold w-20 text-center sticky left-0 z-20 bg-slate-700 border-r-2 border-violet-400">Semana</TableHead>
+                <TableHead className="text-yellow-300 font-bold w-24 text-center border-r border-slate-500">Monjaro</TableHead>
+                <TableHead className="text-yellow-300 font-bold w-28 text-center border-r border-slate-500">Status</TableHead>
+                {columns.map((col) => (
+                  <>
+                    <TableHead 
+                      key={col.key} 
+                      className="text-yellow-300 font-bold text-center min-w-[85px] cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-500"
+                      onClick={() => toggleColumn(col.key)}
                     >
-                      <TableCell className="font-bold text-center text-white">
-                        {record.week_number} {isHiato && '⚠️'}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Scrollable columns */}
-          <div className="overflow-x-auto flex-1">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-slate-800 hover:bg-slate-800">
-                  <TableHead className="text-white font-bold w-24 text-center border-r border-slate-500">Monjaro</TableHead>
-                  <TableHead className="text-white font-bold w-28 text-center border-r border-slate-500">Status</TableHead>
-                  {columns.map((col) => (
-                    <>
+                      <div className="flex items-center justify-center gap-1">
+                        <span>{col.label}</span>
+                        {expandedCols.has(col.key) ? (
+                          <Minus className="w-3 h-3 text-orange-400" />
+                        ) : (
+                          <Plus className="w-3 h-3 text-lime-400" />
+                        )}
+                      </div>
+                    </TableHead>
+                    {expandedCols.has(col.key) && (
                       <TableHead 
-                        key={col.key} 
-                        className="text-white font-bold text-center min-w-[85px] cursor-pointer hover:bg-slate-700 transition-colors border-r border-slate-600"
-                        onClick={() => toggleColumn(col.key)}
+                        key={`${col.key}-diff`} 
+                        className="text-orange-300 font-semibold text-center min-w-[75px] bg-orange-900/70 border-r border-orange-500"
                       >
-                        <div className="flex items-center justify-center gap-1">
-                          <span>{col.label}</span>
-                          {expandedCols.has(col.key) ? (
-                            <Minus className="w-3 h-3 text-violet-300" />
-                          ) : (
-                            <Plus className="w-3 h-3 text-cyan-300" />
-                          )}
-                        </div>
+                        Δ Meta
                       </TableHead>
+                    )}
+                  </>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {/* Linha 0: Parâmetros de referência */}
+              <TableRow className="bg-violet-900 hover:bg-violet-900 border-b-2 border-violet-400">
+                <TableCell className="font-bold text-center text-yellow-200 sticky left-0 z-20 bg-violet-900 border-r-2 border-violet-400">IDEAL</TableCell>
+                <TableCell className="text-center text-violet-200 border-r border-slate-500">-</TableCell>
+                <TableCell className="text-center text-violet-200 border-r border-slate-500">Meta</TableCell>
+                {columns.map((col) => {
+                  const param = params[col.key];
+                  return (
+                    <>
+                      <TableCell 
+                        key={col.key} 
+                        className="text-center text-yellow-200 font-semibold border-r border-slate-500"
+                      >
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help underline decoration-dotted decoration-yellow-400">
+                              {param.ideal !== null ? `${param.ideal}${param.unit ? ` ${param.unit}` : ''}` : '-'}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-slate-800 text-white border-violet-500 max-w-xs">
+                            <p className="text-sm">{param.tooltip}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
                       {expandedCols.has(col.key) && (
-                        <TableHead 
+                        <TableCell 
                           key={`${col.key}-diff`} 
-                          className="text-cyan-200 font-semibold text-center min-w-[75px] bg-cyan-900/60 border-r border-cyan-600"
+                          className="text-center text-orange-200 bg-orange-900/60 border-r border-orange-500"
                         >
-                          Δ Meta
-                        </TableHead>
+                          -
+                        </TableCell>
                       )}
                     </>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {/* Linha 0: Parâmetros de referência */}
-                <TableRow className="bg-violet-800/70 hover:bg-violet-800/70 border-b-2 border-violet-400">
-                  <TableCell className="text-center text-violet-100 border-r border-slate-500">-</TableCell>
-                  <TableCell className="text-center text-violet-100 border-r border-slate-500">Meta</TableCell>
-                  {columns.map((col) => {
-                    const param = params[col.key];
-                    return (
-                      <>
-                        <TableCell 
-                          key={col.key} 
-                          className="text-center text-white font-semibold border-r border-slate-600"
-                        >
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="cursor-help underline decoration-dotted decoration-violet-300">
-                                {param.ideal !== null ? `${param.ideal}${param.unit ? ` ${param.unit}` : ''}` : '-'}
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-slate-800 text-white border-violet-500 max-w-xs">
-                              <p className="text-sm">{param.tooltip}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TableCell>
-                        {expandedCols.has(col.key) && (
-                          <TableCell 
-                            key={`${col.key}-diff`} 
-                            className="text-center text-cyan-200 bg-cyan-900/50 border-r border-cyan-600"
-                          >
-                            -
-                          </TableCell>
-                        )}
-                      </>
-                    );
-                  })}
-                </TableRow>
-                
-                {/* Dados */}
-                {records.map((record, i) => {
-                  const isHiato = record.status?.includes("HIATO");
-                  const prev = i > 0 ? records[i - 1] : null;
-                  
-                  return (
-                    <TableRow 
-                      key={record.id} 
-                      className={`${isHiato ? 'bg-amber-900/50' : i % 2 === 0 ? 'bg-slate-800' : 'bg-slate-700'} hover:bg-slate-600`}
-                    >
-                      <TableCell className="text-center text-slate-100 border-r border-slate-500">{record.monjaro_dose} mg</TableCell>
-                      <TableCell className="text-center text-slate-100 border-r border-slate-500 text-xs">{record.status}</TableCell>
-                      {columns.map((col) => {
-                        const value = Number((record as any)[col.key]);
-                        const prevValue = prev ? Number((prev as any)[col.key]) : null;
-                        const param = params[col.key];
-                        const diffInfo = getDiffToIdeal(value, param.ideal, param.lowerIsBetter);
-                        
-                        return (
-                          <>
-                            <TableCell 
-                              key={col.key} 
-                              className={`text-center border-r border-slate-600 ${getTextColor(value, prevValue, param.lowerIsBetter)}`}
-                            >
-                              {col.format(value)}
-                            </TableCell>
-                            {expandedCols.has(col.key) && (
-                              <TableCell 
-                                key={`${col.key}-diff`} 
-                                className={`text-center bg-cyan-900/40 text-sm font-medium border-r border-cyan-700 ${diffInfo.color}`}
-                              >
-                                {diffInfo.diff !== null ? diffInfo.label : '-'}
-                              </TableCell>
-                            )}
-                          </>
-                        );
-                      })}
-                    </TableRow>
                   );
                 })}
-              </TableBody>
-            </Table>
-          </div>
+              </TableRow>
+              
+              {/* Dados */}
+              {records.map((record, i) => {
+                const isHiato = record.status?.includes("HIATO");
+                const prev = i > 0 ? records[i - 1] : null;
+                const rowBg = isHiato ? 'bg-amber-900/50' : i % 2 === 0 ? 'bg-slate-800' : 'bg-slate-750';
+                
+                return (
+                  <TableRow 
+                    key={record.id} 
+                    className={`${rowBg} hover:bg-slate-600`}
+                  >
+                    <TableCell className={`font-bold text-center text-white sticky left-0 z-20 ${rowBg} border-r-2 border-violet-400`}>
+                      {record.week_number} {isHiato && '⚠️'}
+                    </TableCell>
+                    <TableCell className="text-center text-slate-200 border-r border-slate-600">{record.monjaro_dose} mg</TableCell>
+                    <TableCell className="text-center text-slate-200 border-r border-slate-600 text-xs">{record.status}</TableCell>
+                    {columns.map((col) => {
+                      const value = Number((record as any)[col.key]);
+                      const prevValue = prev ? Number((prev as any)[col.key]) : null;
+                      const param = params[col.key];
+                      const diffInfo = getDiffToIdeal(value, param.ideal, param.lowerIsBetter);
+                      
+                      return (
+                        <>
+                          <TableCell 
+                            key={col.key} 
+                            className={`text-center border-r border-slate-600 ${getTextColor(value, prevValue, param.lowerIsBetter)}`}
+                          >
+                            {col.format(value)}
+                          </TableCell>
+                          {expandedCols.has(col.key) && (
+                            <TableCell 
+                              key={`${col.key}-diff`} 
+                              className={`text-center bg-orange-900/50 text-sm font-bold border-r border-orange-600 ${diffInfo.color}`}
+                            >
+                              {diffInfo.diff !== null ? diffInfo.label : '-'}
+                            </TableCell>
+                          )}
+                        </>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
       </div>
     </TooltipProvider>
