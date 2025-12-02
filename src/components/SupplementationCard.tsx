@@ -16,9 +16,10 @@ interface Supplement {
 interface SupplementationCardProps {
   userPerson: "reneer" | "ana_paula";
   title?: string;
+  isAdmin?: boolean;
 }
 
-const SupplementationCard = ({ userPerson, title }: SupplementationCardProps) => {
+const SupplementationCard = ({ userPerson, title, isAdmin = false }: SupplementationCardProps) => {
   const [supplements, setSupplements] = useState<Supplement[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -123,16 +124,18 @@ const SupplementationCard = ({ userPerson, title }: SupplementationCardProps) =>
     <Card className="card-elevated border-0">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="font-serif text-xl">💊 {displayTitle}</CardTitle>
-        <Button variant="ghost" size="sm" onClick={() => setIsAdding(true)} className="h-8 w-8 p-0">
-          <Plus className="h-4 w-4" />
-        </Button>
+        {isAdmin && (
+          <Button variant="ghost" size="sm" onClick={() => setIsAdding(true)} className="h-8 w-8 p-0">
+            <Plus className="h-4 w-4" />
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="space-y-3">
         {loading ? (
           <p className="text-sm text-muted-foreground">Carregando...</p>
         ) : (
           <>
-            {isAdding && (
+            {isAdmin && isAdding && (
               <div className="p-3 border rounded-lg space-y-2 bg-secondary/20">
                 <Input
                   placeholder="Nome do suplemento"
@@ -207,19 +210,21 @@ const SupplementationCard = ({ userPerson, title }: SupplementationCardProps) =>
                       <span className="text-muted-foreground text-sm ml-2">— {supp.dosage}</span>
                       {supp.notes && <span className="text-xs text-muted-foreground ml-2">({supp.notes})</span>}
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="sm" onClick={() => startEdit(supp)} className="h-7 w-7 p-0">
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteSupp(supp.id)}
-                        className="h-7 w-7 p-0 text-destructive"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    {isAdmin && (
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="sm" onClick={() => startEdit(supp)} className="h-7 w-7 p-0">
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteSupp(supp.id)}
+                          className="h-7 w-7 p-0 text-destructive"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -227,7 +232,7 @@ const SupplementationCard = ({ userPerson, title }: SupplementationCardProps) =>
 
             {supplements.length === 0 && !isAdding && (
               <p className="text-sm text-muted-foreground text-center py-4">
-                Nenhum suplemento cadastrado. Clique em + para adicionar.
+                Nenhum suplemento cadastrado.{isAdmin && " Clique em + para adicionar."}
               </p>
             )}
           </>

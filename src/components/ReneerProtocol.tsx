@@ -2,7 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SupplementationCard from "./SupplementationCard";
 
-const ReneerProtocol = () => {
+interface ReneerProtocolProps {
+  isAdmin?: boolean;
+}
+
+const ReneerProtocol = ({ isAdmin = false }: ReneerProtocolProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Resumo do Protocolo */}
@@ -124,7 +128,7 @@ const ReneerProtocol = () => {
       </Card>
 
       {/* Suplementação */}
-      <SupplementationCard userPerson="reneer" />
+      <SupplementationCard userPerson="reneer" isAdmin={isAdmin} />
 
       {/* Métricas Detalhadas */}
       <Card className="card-elevated border-0">

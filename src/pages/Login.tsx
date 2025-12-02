@@ -125,6 +125,32 @@ const Login = () => {
               >
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-10 rounded-xl text-sm"
+                disabled={isLoading}
+                onClick={async () => {
+                  if (!email || !password) {
+                    toast.error("Preencha email e senha");
+                    return;
+                  }
+                  setIsLoading(true);
+                  const { error } = await signUp(email, password);
+                  if (error) {
+                    if (error.message.includes("already registered")) {
+                      toast.error("Este email já está cadastrado");
+                    } else {
+                      toast.error(error.message);
+                    }
+                  } else {
+                    toast.success("Conta criada! Agora faça login.");
+                  }
+                  setIsLoading(false);
+                }}
+              >
+                Criar Nova Conta
+              </Button>
             </form>
 
             <div className="mt-6 pt-6 border-t border-border space-y-3">

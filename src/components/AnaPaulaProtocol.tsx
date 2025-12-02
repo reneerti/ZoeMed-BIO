@@ -2,7 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SupplementationCard from "./SupplementationCard";
 
-const AnaPaulaProtocol = () => {
+interface AnaPaulaProtocolProps {
+  isAdmin?: boolean;
+}
+
+const AnaPaulaProtocol = ({ isAdmin = false }: AnaPaulaProtocolProps) => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Diagnóstico */}
@@ -218,7 +222,7 @@ const AnaPaulaProtocol = () => {
             </div>
 
             <div className="md:col-span-2">
-              <SupplementationCard userPerson="ana_paula" title="Suplementação" />
+              <SupplementationCard userPerson="ana_paula" title="Suplementação" isAdmin={isAdmin} />
             </div>
           </div>
         </CardContent>

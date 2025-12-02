@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import reneerAvatar from "@/assets/reneer-avatar.png";
 import anaPaulaAvatar from "@/assets/ana-paula-avatar.png";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface UserSummary {
   name: string;
@@ -36,6 +37,7 @@ interface UserProfile {
 const SelectUser = () => {
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
+  const { isAdmin } = useUserRole();
   const [reneerData, setReneerData] = useState<UserSummary | null>(null);
   const [anaPaulaData, setAnaPaulaData] = useState<UserSummary | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
@@ -223,20 +225,22 @@ const SelectUser = () => {
                 className={`w-14 h-14 rounded-full object-cover ring-2 ring-offset-2 ring-offset-background cursor-pointer ${isReneer ? 'ring-reneer-primary' : 'ring-ana-paula-primary'}`}
                 onClick={() => navigate(`/dashboard/${person}`)}
               />
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  fileInputRef.current?.click();
-                }}
-                className={`absolute inset-0 rounded-full flex items-center justify-center bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity ${uploading === person ? 'opacity-100' : ''}`}
-                disabled={uploading === person}
-              >
-                {uploading === person ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Camera className="w-5 h-5 text-white" />
-                )}
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  className={`absolute inset-0 rounded-full flex items-center justify-center bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity ${uploading === person ? 'opacity-100' : ''}`}
+                  disabled={uploading === person}
+                >
+                  {uploading === person ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Camera className="w-5 h-5 text-white" />
+                  )}
+                </button>
+              )}
               <input 
                 ref={fileInputRef}
                 type="file" 
@@ -381,14 +385,16 @@ const SelectUser = () => {
               <BarChart3 className="w-4 h-4" />
               {showComparison ? "Ver Perfis" : "Comparar"}
             </Button>
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => navigate("/adicionar")}
-            >
-              <Plus className="w-4 h-4" />
-              Adicionar
-            </Button>
+            {isAdmin && (
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() => navigate("/adicionar")}
+              >
+                <Plus className="w-4 h-4" />
+                Adicionar
+              </Button>
+            )}
           </div>
         </div>
 

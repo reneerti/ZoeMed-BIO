@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnaPaulaProtocol from "@/components/AnaPaulaProtocol";
 import ReneerProtocol from "@/components/ReneerProtocol";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface BioimpedanceRecord {
   id: string;
@@ -42,6 +43,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { person } = useParams<{ person: string }>();
   const { user, loading } = useAuth();
+  const { isAdmin } = useUserRole();
   const [records, setRecords] = useState<BioimpedanceRecord[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
@@ -125,10 +127,12 @@ const Dashboard = () => {
             Voltar
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2" onClick={() => navigate("/adicionar")}>
-              <Plus className="w-4 h-4" />
-              Adicionar
-            </Button>
+            {isAdmin && (
+              <Button variant="outline" className="gap-2" onClick={() => navigate("/adicionar")}>
+                <Plus className="w-4 h-4" />
+                Adicionar
+              </Button>
+            )}
             <Button variant="outline" className="gap-2" onClick={exportToCSV}>
               <Download className="w-4 h-4" />
               Exportar CSV
@@ -406,7 +410,7 @@ const Dashboard = () => {
           </TabsContent>
 
           <TabsContent value="protocolo">
-            {isReneer ? <ReneerProtocol /> : <AnaPaulaProtocol />}
+            {isReneer ? <ReneerProtocol isAdmin={isAdmin} /> : <AnaPaulaProtocol isAdmin={isAdmin} />}
           </TabsContent>
         </Tabs>
       </div>
