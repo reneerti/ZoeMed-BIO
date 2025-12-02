@@ -264,45 +264,34 @@ const SelectUser = () => {
         >
           {data ? (
             <>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-secondary/50">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Scale className="w-4 h-4" />
-                    Peso Atual
-                  </div>
-                  <p className="text-xl font-semibold">{data.latestWeight.toFixed(1)} kg</p>
+              {/* Summary Cards */}
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 text-center">
+                  <p className="text-[10px] text-white/70 uppercase">Peso</p>
+                  <p className="text-sm font-bold text-white">{data.latestWeight.toFixed(1)} kg</p>
+                  <span className={`text-[10px] ${data.weightChange < 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+                    {data.weightChange < 0 ? '↓' : '↑'} {Math.abs((data.weightChange / data.initialWeight) * 100).toFixed(1)}%
+                  </span>
                 </div>
-                <div className="p-3 rounded-xl bg-secondary/50">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    {data.weightChange < 0 ? (
-                      <TrendingDown className="w-4 h-4 text-success" />
-                    ) : (
-                      <TrendingUp className="w-4 h-4 text-destructive" />
-                    )}
-                    Variação
-                  </div>
-                  <p className={`text-xl font-semibold ${data.weightChange < 0 ? 'text-success' : 'text-destructive'}`}>
-                    {data.weightChange > 0 ? '+' : ''}{data.weightChange.toFixed(1)} kg
-                  </p>
+                <div className="p-2 rounded-lg bg-gradient-to-br from-rose-500 to-rose-700 text-center">
+                  <p className="text-[10px] text-white/70 uppercase">Gordura</p>
+                  <p className="text-sm font-bold text-white">{data.latestFat.toFixed(1)}%</p>
                 </div>
-                <div className="p-3 rounded-xl bg-secondary/50">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Activity className="w-4 h-4" />
-                    Gordura
-                  </div>
-                  <p className="text-xl font-semibold">{data.latestFat.toFixed(1)}%</p>
+                <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 text-center">
+                  <p className="text-[10px] text-white/70 uppercase">Músculo</p>
+                  <p className="text-sm font-bold text-white">{data.latestMuscle.toFixed(1)}%</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 text-center">
+                  <p className="text-[10px] text-white/70 uppercase">IMC</p>
+                  <p className="text-sm font-bold text-white">{data.latestBmi.toFixed(1)}</p>
+                </div>
+                <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 text-center">
+                  <p className="text-[10px] text-white/70 uppercase">G. Visceral</p>
+                  <p className="text-sm font-bold text-white">{data.latestVisceralFat.toFixed(0)}</p>
                 </div>
                 <ProteinCalculator weight={data.latestWeight} person={person} />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-secondary/50">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Activity className="w-4 h-4" />
-                    Músculo
-                  </div>
-                  <p className="text-xl font-semibold">{data.latestMuscle.toFixed(1)}%</p>
-                </div>
               </div>
 
               {data.chartData.length > 1 && (
