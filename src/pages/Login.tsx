@@ -14,7 +14,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { signIn, user, loading } = useAuth();
+  const { signIn, signUp, user, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && user) {
@@ -124,6 +124,28 @@ const Login = () => {
                 disabled={isLoading}
               >
                 {isLoading ? "Entrando..." : "Entrar"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-10 rounded-xl text-sm"
+                disabled={isLoading}
+                onClick={async () => {
+                  if (!email || !password) {
+                    toast.error("Preencha email e senha");
+                    return;
+                  }
+                  setIsLoading(true);
+                  const { error } = await signUp(email, password);
+                  if (error) {
+                    toast.error(error.message);
+                  } else {
+                    toast.success("Conta criada! Agora faça login.");
+                  }
+                  setIsLoading(false);
+                }}
+              >
+                Criar Conta (temporário)
               </Button>
             </form>
 
