@@ -6,6 +6,7 @@ import { ArrowLeft, TrendingDown, TrendingUp, Scale, Activity, Plus, BarChart3, 
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import ComparativeCharts from "@/components/ComparativeCharts";
+import ProteinCalculator from "@/components/ProteinCalculator";
 import { toast } from "sonner";
 import reneerAvatar from "@/assets/reneer-avatar.png";
 import anaPaulaAvatar from "@/assets/ana-paula-avatar.png";
@@ -291,6 +292,10 @@ const SelectUser = () => {
                   </div>
                   <p className="text-xl font-semibold">{data.latestFat.toFixed(1)}%</p>
                 </div>
+                <ProteinCalculator weight={data.latestWeight} person={person} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-xl bg-secondary/50">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                     <Activity className="w-4 h-4" />
