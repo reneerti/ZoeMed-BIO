@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Heart, Upload, Eye, EyeOff } from "lucide-react";
+import { Heart, Upload, Eye, EyeOff, Smartphone } from "lucide-react";
 
 const VALID_USER = "RENEER.JESUS";
 const VALID_PASSWORD = "An@2025";
@@ -100,7 +100,7 @@ const Login = () => {
               </Button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-border">
+            <div className="mt-6 pt-6 border-t border-border space-y-3">
               <Button
                 variant="outline"
                 className="w-full h-12 rounded-xl"
@@ -108,6 +108,14 @@ const Login = () => {
               >
                 <Upload className="w-5 h-5 mr-2" />
                 Upload de Bioimpedância
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full h-10 rounded-xl text-muted-foreground"
+                onClick={() => navigate("/instalar")}
+              >
+                <Smartphone className="w-4 h-4 mr-2" />
+                Instalar no Celular
               </Button>
             </div>
           </CardContent>

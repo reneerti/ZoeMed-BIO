@@ -7,6 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AnaPaulaProtocol from "@/components/AnaPaulaProtocol";
+import ReneerProtocol from "@/components/ReneerProtocol";
 
 interface BioimpedanceRecord {
   id: string;
@@ -201,71 +204,84 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Data Table */}
-        <Card className="card-elevated border-0">
-          <CardHeader>
-            <CardTitle className="font-serif">Bioimpedância Completa</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="w-full">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-charcoal hover:bg-charcoal">
-                    <TableHead className="text-primary-foreground font-semibold">Semana</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">Monjaro</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">Status</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">Peso</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">IMC</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">Gordura %</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">M. Gorda</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">M. Livre</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">M. Musc</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">Taxa Musc %</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">M. Óssea</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">Proteína %</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">Água %</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">G. Subcut %</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">G. Visceral</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">TMB</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">Id. Met.</TableHead>
-                    <TableHead className="text-primary-foreground font-semibold">WHR</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {records.map((record, i) => {
-                    const isHiato = record.status?.includes("HIATO");
-                    return (
-                      <TableRow 
-                        key={record.id} 
-                        className={`${isHiato ? 'bg-warning/20' : i % 2 === 0 ? 'bg-card' : 'bg-secondary/30'}`}
-                      >
-                        <TableCell className="font-semibold">{record.week_number} {isHiato && '⚠️'}</TableCell>
-                        <TableCell>{record.monjaro_dose} mg</TableCell>
-                        <TableCell>{record.status}</TableCell>
-                        <TableCell className="font-semibold">{Number(record.weight).toFixed(1)}</TableCell>
-                        <TableCell>{Number(record.bmi).toFixed(1)}</TableCell>
-                        <TableCell>{Number(record.body_fat_percent).toFixed(1)}%</TableCell>
-                        <TableCell>{Number(record.fat_mass).toFixed(1)}</TableCell>
-                        <TableCell>{Number(record.lean_mass).toFixed(1)}</TableCell>
-                        <TableCell>{Number(record.muscle_mass).toFixed(1)}</TableCell>
-                        <TableCell>{Number(record.muscle_rate_percent).toFixed(1)}%</TableCell>
-                        <TableCell>{Number(record.bone_mass).toFixed(1)}</TableCell>
-                        <TableCell>{Number(record.protein_percent).toFixed(1)}%</TableCell>
-                        <TableCell>{Number(record.body_water_percent).toFixed(1)}%</TableCell>
-                        <TableCell>{Number(record.subcutaneous_fat_percent).toFixed(1)}%</TableCell>
-                        <TableCell>{Number(record.visceral_fat).toFixed(0)}</TableCell>
-                        <TableCell>{record.bmr}</TableCell>
-                        <TableCell>{record.metabolic_age}</TableCell>
-                        <TableCell>{Number(record.whr).toFixed(2)}</TableCell>
+        {/* Tabs for Data and Protocol */}
+        <Tabs defaultValue="dados" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="dados">📊 Dados</TabsTrigger>
+            <TabsTrigger value="protocolo">📋 Protocolo</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dados">
+            <Card className="card-elevated border-0">
+              <CardHeader>
+                <CardTitle className="font-serif">Bioimpedância Completa</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="w-full">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-charcoal hover:bg-charcoal">
+                        <TableHead className="text-primary-foreground font-semibold">Semana</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">Monjaro</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">Status</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">Peso</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">IMC</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">Gordura %</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">M. Gorda</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">M. Livre</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">M. Musc</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">Taxa Musc %</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">M. Óssea</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">Proteína %</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">Água %</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">G. Subcut %</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">G. Visceral</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">TMB</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">Id. Met.</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold">WHR</TableHead>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-          </CardContent>
-        </Card>
+                    </TableHeader>
+                    <TableBody>
+                      {records.map((record, i) => {
+                        const isHiato = record.status?.includes("HIATO");
+                        return (
+                          <TableRow 
+                            key={record.id} 
+                            className={`${isHiato ? 'bg-warning/20' : i % 2 === 0 ? 'bg-card' : 'bg-secondary/30'}`}
+                          >
+                            <TableCell className="font-semibold">{record.week_number} {isHiato && '⚠️'}</TableCell>
+                            <TableCell>{record.monjaro_dose} mg</TableCell>
+                            <TableCell>{record.status}</TableCell>
+                            <TableCell className="font-semibold">{Number(record.weight).toFixed(1)}</TableCell>
+                            <TableCell>{Number(record.bmi).toFixed(1)}</TableCell>
+                            <TableCell>{Number(record.body_fat_percent).toFixed(1)}%</TableCell>
+                            <TableCell>{Number(record.fat_mass).toFixed(1)}</TableCell>
+                            <TableCell>{Number(record.lean_mass).toFixed(1)}</TableCell>
+                            <TableCell>{Number(record.muscle_mass).toFixed(1)}</TableCell>
+                            <TableCell>{Number(record.muscle_rate_percent).toFixed(1)}%</TableCell>
+                            <TableCell>{Number(record.bone_mass).toFixed(1)}</TableCell>
+                            <TableCell>{Number(record.protein_percent).toFixed(1)}%</TableCell>
+                            <TableCell>{Number(record.body_water_percent).toFixed(1)}%</TableCell>
+                            <TableCell>{Number(record.subcutaneous_fat_percent).toFixed(1)}%</TableCell>
+                            <TableCell>{Number(record.visceral_fat).toFixed(0)}</TableCell>
+                            <TableCell>{record.bmr}</TableCell>
+                            <TableCell>{record.metabolic_age}</TableCell>
+                            <TableCell>{Number(record.whr).toFixed(2)}</TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="protocolo">
+            {isReneer ? <ReneerProtocol /> : <AnaPaulaProtocol />}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
