@@ -197,7 +197,7 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
                     key={record.id} 
                     className={`${rowBg} hover:bg-slate-600`}
                   >
-                    <TableCell className={`font-bold text-center text-white sticky left-0 z-20 ${rowBg} border-r-2 border-violet-400`}>
+                    <TableCell className={`font-bold text-center text-slate-900 sticky left-0 z-20 ${rowBg} border-r-2 border-violet-400`}>
                       {record.week_number} {isHiato && '⚠️'}
                     </TableCell>
                     <TableCell className="text-center text-slate-200 border-r border-slate-600">{record.monjaro_dose} mg</TableCell>
