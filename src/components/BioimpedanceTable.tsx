@@ -190,7 +190,7 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
               {records.map((record, i) => {
                 const isHiato = record.status?.includes("HIATO");
                 const prev = i > 0 ? records[i - 1] : null;
-                const rowBg = isHiato ? 'bg-amber-900/50' : i % 2 === 0 ? 'bg-slate-800' : 'bg-slate-750';
+                const rowBg = isHiato ? 'bg-orange-800/40' : i % 2 === 0 ? 'bg-slate-800' : 'bg-slate-750';
                 
                 return (
                   <TableRow 
