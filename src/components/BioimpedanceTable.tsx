@@ -115,21 +115,21 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-700 hover:bg-slate-700">
-                <TableHead className="text-yellow-300 font-bold w-20 text-center sticky left-0 z-20 bg-slate-700 border-r-2 border-violet-400">Semana</TableHead>
-                <TableHead className="text-yellow-300 font-bold w-24 text-center border-r border-slate-500">Monjaro</TableHead>
-                <TableHead className="text-yellow-300 font-bold w-28 text-center border-r border-slate-500">Status</TableHead>
+              <TableRow className="bg-slate-900 hover:bg-slate-900">
+                <TableHead className="text-cyan-300 font-bold w-20 text-center sticky left-0 z-20 bg-slate-900 border-r-2 border-violet-400">Semana</TableHead>
+                <TableHead className="text-cyan-300 font-bold w-24 text-center border-r border-slate-600">Monjaro</TableHead>
+                <TableHead className="text-cyan-300 font-bold w-28 text-center border-r border-slate-600">Status</TableHead>
                 {columns.map((col) => (
                   <>
                     <TableHead 
                       key={col.key} 
-                      className="text-yellow-300 font-bold text-center min-w-[85px] cursor-pointer hover:bg-slate-600 transition-colors border-r border-slate-500"
+                      className="text-cyan-300 font-bold text-center min-w-[85px] cursor-pointer hover:bg-slate-800 transition-colors border-r border-slate-600"
                       onClick={() => toggleColumn(col.key)}
                     >
                       <div className="flex items-center justify-center gap-1">
                         <span>{col.label}</span>
                         {expandedCols.has(col.key) ? (
-                          <Minus className="w-3 h-3 text-orange-400" />
+                          <Minus className="w-3 h-3 text-rose-400" />
                         ) : (
                           <Plus className="w-3 h-3 text-lime-400" />
                         )}
@@ -138,7 +138,7 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
                     {expandedCols.has(col.key) && (
                       <TableHead 
                         key={`${col.key}-diff`} 
-                        className="text-orange-300 font-semibold text-center min-w-[75px] bg-orange-900/70 border-r border-orange-500"
+                        className="text-slate-700 font-bold text-center min-w-[75px] bg-amber-100 border-r border-amber-300"
                       >
                         Δ Meta
                       </TableHead>
@@ -172,14 +172,14 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
                           </TooltipContent>
                         </Tooltip>
                       </TableCell>
-                      {expandedCols.has(col.key) && (
-                        <TableCell 
-                          key={`${col.key}-diff`} 
-                          className="text-center text-orange-200 bg-orange-900/60 border-r border-orange-500"
-                        >
-                          -
-                        </TableCell>
-                      )}
+                    {expandedCols.has(col.key) && (
+                      <TableCell 
+                        key={`${col.key}-diff`} 
+                        className="text-center text-slate-500 bg-amber-50 border-r border-amber-200"
+                      >
+                        -
+                      </TableCell>
+                    )}
                     </>
                   );
                 })}
@@ -218,7 +218,7 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
                           {expandedCols.has(col.key) && (
                             <TableCell 
                               key={`${col.key}-diff`} 
-                              className={`text-center bg-orange-900/50 text-sm font-bold border-r border-orange-600 ${diffInfo.color}`}
+                              className={`text-center bg-amber-50 text-sm font-extrabold border-r border-amber-200 ${diffInfo.color}`}
                             >
                               {diffInfo.diff !== null ? diffInfo.label : '-'}
                             </TableCell>
