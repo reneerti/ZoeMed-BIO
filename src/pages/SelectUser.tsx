@@ -291,7 +291,7 @@ const SelectUser = () => {
                   <p className="text-[10px] text-white/70 uppercase">IMC</p>
                   <p className="text-sm font-bold text-white">{data.latestBmi.toFixed(1)}</p>
                 </div>
-                <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 text-center">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 text-center">
                   <p className="text-[10px] text-white/70 uppercase">G. Visceral</p>
                   <p className="text-sm font-bold text-white">{data.latestVisceralFat.toFixed(0)}</p>
                 </div>

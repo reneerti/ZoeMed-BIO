@@ -160,7 +160,7 @@ const Dashboard = () => {
             const percent = Math.abs((diff / initial) * 100).toFixed(1);
             const threshold = Math.abs(initial * 0.01);
             
-            if (Math.abs(diff) <= threshold) return { icon: "→", percent: "0%", color: "text-amber-200", stroke: "#fbbf24" };
+            if (Math.abs(diff) <= threshold) return { icon: "→", percent: "0%", color: "text-yellow-200", stroke: "#facc15" };
             if (lowerIsBetter) {
               return diff < 0 
                 ? { icon: "↓", percent: `-${percent}%`, color: "text-emerald-300", stroke: "#6ee7b7" }
@@ -204,7 +204,7 @@ const Dashboard = () => {
             { 
               label: "G. Visceral", 
               value: Number(latest.visceral_fat).toFixed(0),
-              bg: "bg-gradient-to-br from-amber-500 to-amber-700",
+              bg: "bg-gradient-to-br from-orange-500 to-orange-700",
               performance: getPerformanceIndicator(Number(latest.visceral_fat), Number(first.visceral_fat), true),
               sparkData: recentRecords.map(r => ({ v: Number(r.visceral_fat) }))
             },
