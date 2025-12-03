@@ -189,7 +189,8 @@ const Dashboard = () => {
             { 
               label: "Gordura", 
               value: `${Number(latest.body_fat_percent).toFixed(1)}%`,
-              bg: "bg-gradient-to-br from-rose-500 to-rose-700",
+              bg: "bg-gradient-to-br from-rose-100 to-rose-200",
+              textColor: "text-rose-700",
               performance: getPerformanceIndicator(Number(latest.body_fat_percent), Number(first.body_fat_percent), true),
               sparkData: recentRecords.map(r => ({ v: Number(r.body_fat_percent) }))
             },
@@ -221,8 +222,8 @@ const Dashboard = () => {
               {summaryItems.map((item, i) => (
                 <Card key={i} className={`card-elevated border-0 ${item.bg} shadow-lg overflow-hidden`}>
                   <CardContent className="p-3 text-center relative">
-                    <p className="text-[10px] uppercase tracking-wide mb-0.5 text-white/70">{item.label}</p>
-                    <p className="text-xl font-serif font-bold text-white leading-tight">{item.value}</p>
+                    <p className={`text-[10px] uppercase tracking-wide mb-0.5 ${item.textColor ? item.textColor + '/70' : 'text-white/70'}`}>{item.label}</p>
+                    <p className={`text-xl font-serif font-bold leading-tight ${item.textColor || 'text-white'}`}>{item.value}</p>
                     <span className={`text-[10px] font-medium ${item.performance.color}`}>
                       {item.performance.icon} {item.performance.percent}
                     </span>
