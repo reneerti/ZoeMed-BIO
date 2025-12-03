@@ -91,7 +91,7 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
     const diff = current - previous;
     const threshold = Math.abs(previous * 0.005);
     
-    if (Math.abs(diff) <= threshold) return "text-amber-400 font-semibold";
+    if (Math.abs(diff) <= threshold) return "text-yellow-300 font-semibold";
     if (lowerIsBetter) {
       return diff < 0 ? "text-emerald-400 font-semibold" : "text-red-400 font-semibold"; 
     }
