@@ -12,6 +12,7 @@ import ReneerProtocol from "@/components/ReneerProtocol";
 import AnalysisHistory from "@/components/AnalysisHistory";
 import GoalsProgress from "@/components/GoalsProgress";
 import ReportGenerator from "@/components/ReportGenerator";
+import MetricsRadarChart from "@/components/MetricsRadarChart";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
@@ -331,6 +332,24 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Radar Chart */}
+        {records.length > 0 && (
+          <div className="mb-8">
+            <MetricsRadarChart
+              currentMetrics={{
+                bmi: records[records.length - 1].bmi,
+                body_fat_percent: records[records.length - 1].body_fat_percent,
+                muscle_rate_percent: records[records.length - 1].muscle_rate_percent,
+                visceral_fat: records[records.length - 1].visceral_fat,
+                body_water_percent: records[records.length - 1].body_water_percent,
+                protein_percent: records[records.length - 1].protein_percent,
+                bone_mass: records[records.length - 1].bone_mass,
+              }}
+              isMale={isReneer}
+            />
+          </div>
+        )}
 
         {/* Goals Progress */}
         {records.length > 0 && (
