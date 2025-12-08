@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Upload as UploadIcon, FileImage, Loader2, Sparkles, CheckCircle } from "lucide-react";
+import { ArrowLeft, Upload as UploadIcon, FileImage, Loader2, Sparkles, CheckCircle, Brain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -15,6 +15,7 @@ const Upload = () => {
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
   const [extractedData, setExtractedData] = useState<any>(null);
   const [insights, setInsights] = useState<string | null>(null);
 
@@ -75,6 +76,35 @@ const Upload = () => {
     }
   };
 
+  const forceAnalysis = async () => {
+    if (!selectedUser) {
+      toast.error("Selecione um usuário");
+      return;
+    }
+
+    setAnalyzing(true);
+
+    try {
+      const { data: analysisResult, error: analysisError } = await supabase.functions.invoke("generate-analysis", {
+        body: {
+          userPerson: selectedUser,
+        },
+      });
+
+      if (analysisError) throw analysisError;
+
+      if (analysisResult?.insights) {
+        setInsights(analysisResult.insights);
+        toast.success("Análise gerada com sucesso!");
+      }
+    } catch (error) {
+      console.error("Error generating analysis:", error);
+      toast.error("Erro ao gerar análise");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   const saveData = async () => {
     if (!extractedData || !selectedUser) return;
 
@@ -98,10 +128,36 @@ const Upload = () => {
     }
   };
 
+  // Format field names for display
+  const formatFieldName = (key: string): string => {
+    const fieldNames: Record<string, string> = {
+      measurement_date: "Data",
+      weight: "Peso (kg)",
+      bmi: "IMC",
+      body_fat_percent: "Gordura (%)",
+      fat_mass: "Massa Gorda (kg)",
+      lean_mass: "Massa Magra (kg)",
+      muscle_mass: "Massa Muscular (kg)",
+      muscle_rate_percent: "Taxa Muscular (%)",
+      skeletal_muscle_percent: "Músculo Esquelético (%)",
+      bone_mass: "Massa Óssea (kg)",
+      protein_mass: "Massa Protéica (kg)",
+      protein_percent: "Proteína (%)",
+      body_water_percent: "Água Corporal (%)",
+      moisture_content: "Teor Umidade (kg)",
+      subcutaneous_fat_percent: "Gordura Subcutânea (%)",
+      visceral_fat: "Gordura Visceral",
+      bmr: "TMB (kcal)",
+      metabolic_age: "Idade Metabólica",
+      whr: "WHR"
+    };
+    return fieldNames[key] || key;
+  };
+
   return (
     <div className="min-h-screen gradient-bg p-4 md:p-6">
       <div className="max-w-2xl mx-auto">
-        <Button variant="ghost" className="gap-2 mb-6" onClick={() => navigate("/")}>
+        <Button variant="ghost" className="gap-2 mb-6" onClick={() => navigate("/selecionar")}>
           <ArrowLeft className="w-4 h-4" />
           Voltar
         </Button>
@@ -114,7 +170,7 @@ const Upload = () => {
               Upload de Bioimpedância
             </CardTitle>
             <CardDescription>
-              Faça upload de uma foto da bioimpedância para extrair os dados automaticamente via OCR e IA.
+              Faça upload de um relatório Fitdays ou foto da bioimpedância para extrair os dados automaticamente via OCR e IA.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -131,8 +187,37 @@ const Upload = () => {
               </Select>
             </div>
 
+            {/* Force Analysis Button */}
+            <Button
+              onClick={forceAnalysis}
+              disabled={!selectedUser || analyzing}
+              variant="outline"
+              className="w-full h-12 rounded-xl border-violet-500/50 hover:bg-violet-500/10"
+            >
+              {analyzing ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Gerando Análise Completa...
+                </>
+              ) : (
+                <>
+                  <Brain className="w-5 h-5 mr-2 text-violet-500" />
+                  Forçar Análise com IA
+                </>
+              )}
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">ou faça upload</span>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label>Imagem da Bioimpedância</Label>
+              <Label>Imagem do Relatório Fitdays</Label>
               <div
                 className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer
                   ${preview ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
@@ -157,14 +242,14 @@ const Upload = () => {
                       Clique ou arraste uma imagem aqui
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Suporta JPG, PNG, HEIC
+                      Suporta relatórios Fitdays em JPG, PNG
                     </p>
                   </div>
                 )}
               </div>
             </div>
 
-            {!extractedData && (
+            {!extractedData && file && (
               <Button
                 onClick={processImage}
                 disabled={!file || !selectedUser || processing}
@@ -195,23 +280,13 @@ const Upload = () => {
                     {Object.entries(extractedData).map(([key, value]) => (
                       value && (
                         <div key={key} className="flex justify-between">
-                          <span className="text-muted-foreground">{key}:</span>
+                          <span className="text-muted-foreground">{formatFieldName(key)}:</span>
                           <span className="font-medium">{String(value)}</span>
                         </div>
                       )
                     ))}
                   </div>
                 </div>
-
-                {insights && (
-                  <div className="p-4 rounded-xl bg-warning/10 border border-warning/30">
-                    <div className="flex items-center gap-2 text-warning font-medium mb-2">
-                      <Sparkles className="w-5 h-5" />
-                      Insights da IA
-                    </div>
-                    <p className="text-sm whitespace-pre-wrap">{insights}</p>
-                  </div>
-                )}
 
                 <Button
                   onClick={saveData}
@@ -230,6 +305,18 @@ const Upload = () => {
                     </>
                   )}
                 </Button>
+              </div>
+            )}
+
+            {insights && (
+              <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/30">
+                <div className="flex items-center gap-2 text-violet-400 font-medium mb-3">
+                  <Sparkles className="w-5 h-5" />
+                  Análise da IA
+                </div>
+                <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                  <div className="whitespace-pre-wrap">{insights}</div>
+                </div>
               </div>
             )}
           </CardContent>
