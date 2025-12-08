@@ -346,6 +346,16 @@ const Dashboard = () => {
                 protein_percent: records[records.length - 1].protein_percent,
                 bone_mass: records[records.length - 1].bone_mass,
               }}
+              historicalRecords={records.map(r => ({
+                week_number: r.week_number,
+                bmi: r.bmi,
+                body_fat_percent: r.body_fat_percent,
+                muscle_rate_percent: r.muscle_rate_percent,
+                visceral_fat: r.visceral_fat,
+                body_water_percent: r.body_water_percent,
+                protein_percent: r.protein_percent,
+                bone_mass: r.bone_mass,
+              }))}
               isMale={isReneer}
             />
           </div>

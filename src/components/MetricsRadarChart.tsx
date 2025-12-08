@@ -8,33 +8,39 @@ import {
   Legend,
   ResponsiveContainer,
   Tooltip,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Area,
+  AreaChart,
 } from "recharts";
-import { referenceValues, evaluateMetric, getStatusLabel } from "@/lib/referenceValues";
+import { referenceValues } from "@/lib/referenceValues";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+
+interface MetricRecord {
+  week_number?: number | null;
+  bmi?: number | null;
+  body_fat_percent?: number | null;
+  muscle_rate_percent?: number | null;
+  visceral_fat?: number | null;
+  body_water_percent?: number | null;
+  protein_percent?: number | null;
+  bone_mass?: number | null;
+}
 
 interface MetricsRadarChartProps {
-  currentMetrics: {
-    weight?: number | null;
-    bmi?: number | null;
-    body_fat_percent?: number | null;
-    muscle_rate_percent?: number | null;
-    visceral_fat?: number | null;
-    body_water_percent?: number | null;
-    protein_percent?: number | null;
-    bone_mass?: number | null;
-    bmr?: number | null;
-  };
+  currentMetrics: MetricRecord;
+  historicalRecords?: MetricRecord[];
   isMale: boolean;
 }
 
-const MetricsRadarChart = ({ currentMetrics, isMale }: MetricsRadarChartProps) => {
+const MetricsRadarChart = ({ currentMetrics, historicalRecords = [], isMale }: MetricsRadarChartProps) => {
   // Normalize values to 0-100 scale for radar chart visualization
   const normalizeValue = (value: number | null | undefined, idealMin: number, idealMax: number, riskMax: number): number => {
     if (value === null || value === undefined) return 0;
     
-    // Calculate ideal midpoint
-    const idealMid = (idealMin + idealMax) / 2;
-    
-    // If at ideal midpoint, return 100
+    // If at ideal range, return 100
     if (value >= idealMin && value <= idealMax) {
       return 100;
     }
@@ -53,7 +59,19 @@ const MetricsRadarChart = ({ currentMetrics, isMale }: MetricsRadarChartProps) =
   // Get reference ranges based on gender
   const bodyFatRef = isMale ? referenceValues.bodyFatPercent.male : referenceValues.bodyFatPercent.female;
   const muscleRef = isMale ? referenceValues.musclePercent.male : referenceValues.musclePercent.female;
-  const boneRef = isMale ? referenceValues.boneMass.male : referenceValues.boneMass.female;
+
+  // Calculate score for a single record
+  const calculateScore = (record: MetricRecord): number => {
+    const scores = [
+      normalizeValue(record.bmi, referenceValues.bmi.ideal.min, referenceValues.bmi.ideal.max, 35),
+      normalizeValue(record.body_fat_percent, bodyFatRef.ideal.min, bodyFatRef.ideal.max, 40),
+      normalizeValue(record.muscle_rate_percent, muscleRef.ideal.min, muscleRef.ideal.max, 50),
+      normalizeValue(record.visceral_fat, 1, referenceValues.visceralFat.ideal.max, 20),
+      normalizeValue(record.body_water_percent, referenceValues.bodyWaterPercent.ideal.min, referenceValues.bodyWaterPercent.ideal.max, 75),
+      normalizeValue(record.protein_percent, referenceValues.proteinPercent.ideal.min, referenceValues.proteinPercent.ideal.max, 25),
+    ];
+    return Math.round(scores.reduce((acc, s) => acc + s, 0) / scores.length);
+  };
 
   const radarData = [
     {
@@ -100,8 +118,14 @@ const MetricsRadarChart = ({ currentMetrics, isMale }: MetricsRadarChartProps) =
     },
   ];
 
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload }: any) => {
+  // Calculate score history
+  const scoreHistory = historicalRecords.map((record) => ({
+    semana: record.week_number || 0,
+    score: calculateScore(record),
+  }));
+
+  // Custom tooltip for radar
+  const CustomRadarTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -122,10 +146,41 @@ const MetricsRadarChart = ({ currentMetrics, isMale }: MetricsRadarChartProps) =
     return null;
   };
 
+  // Custom tooltip for line chart
+  const CustomLineTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-popover border border-border rounded-lg p-2 shadow-lg">
+          <p className="text-xs text-muted-foreground">Semana {data.semana}</p>
+          <p className={`text-sm font-bold ${getScoreColor(data.score)}`}>
+            Score: {data.score}%
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   // Calculate overall health score
   const overallScore = Math.round(
     radarData.reduce((acc, item) => acc + item.atual, 0) / radarData.length
   );
+
+  // Calculate trend
+  const getTrend = () => {
+    if (scoreHistory.length < 2) return { icon: Minus, color: "text-muted-foreground", label: "Sem dados" };
+    const firstScore = scoreHistory[0].score;
+    const lastScore = scoreHistory[scoreHistory.length - 1].score;
+    const diff = lastScore - firstScore;
+    
+    if (diff > 3) return { icon: TrendingUp, color: "text-emerald-500", label: `+${diff}%` };
+    if (diff < -3) return { icon: TrendingDown, color: "text-rose-500", label: `${diff}%` };
+    return { icon: Minus, color: "text-amber-500", label: "Estável" };
+  };
+
+  const trend = getTrend();
+  const TrendIcon = trend.icon;
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-emerald-500";
@@ -149,52 +204,115 @@ const MetricsRadarChart = ({ currentMetrics, isMale }: MetricsRadarChartProps) =
             <p className={`text-2xl font-bold ${getScoreColor(overallScore)}`}>
               {overallScore}%
             </p>
-            <p className={`text-xs ${getScoreColor(overallScore)}`}>
-              {getScoreLabel(overallScore)}
-            </p>
+            <div className="flex items-center justify-end gap-1">
+              <TrendIcon className={`w-3 h-3 ${trend.color}`} />
+              <span className={`text-xs ${trend.color}`}>{trend.label}</span>
+            </div>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
-              <PolarGrid stroke="hsl(var(--border))" />
-              <PolarAngleAxis
-                dataKey="metric"
-                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
-              />
-              <PolarRadiusAxis
-                angle={30}
-                domain={[0, 100]}
-                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
-              />
-              <Radar
-                name="Ideal"
-                dataKey="ideal"
-                stroke="hsl(var(--primary))"
-                fill="hsl(var(--primary))"
-                fillOpacity={0.1}
-                strokeWidth={2}
-                strokeDasharray="5 5"
-              />
-              <Radar
-                name="Atual"
-                dataKey="atual"
-                stroke={isMale ? "#3b82f6" : "#f43f5e"}
-                fill={isMale ? "#3b82f6" : "#f43f5e"}
-                fillOpacity={0.4}
-                strokeWidth={2}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                wrapperStyle={{ paddingTop: "10px" }}
-                formatter={(value) => (
-                  <span className="text-sm text-muted-foreground">{value}</span>
-                )}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Radar Chart */}
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
+                <PolarGrid stroke="hsl(var(--border))" />
+                <PolarAngleAxis
+                  dataKey="metric"
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                />
+                <PolarRadiusAxis
+                  angle={30}
+                  domain={[0, 100]}
+                  tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }}
+                />
+                <Radar
+                  name="Ideal"
+                  dataKey="ideal"
+                  stroke="hsl(var(--primary))"
+                  fill="hsl(var(--primary))"
+                  fillOpacity={0.1}
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                />
+                <Radar
+                  name="Atual"
+                  dataKey="atual"
+                  stroke={isMale ? "#3b82f6" : "#f43f5e"}
+                  fill={isMale ? "#3b82f6" : "#f43f5e"}
+                  fillOpacity={0.4}
+                  strokeWidth={2}
+                />
+                <Tooltip content={<CustomRadarTooltip />} />
+                <Legend
+                  wrapperStyle={{ paddingTop: "10px" }}
+                  formatter={(value) => (
+                    <span className="text-xs text-muted-foreground">{value}</span>
+                  )}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Score Evolution Chart */}
+          <div className="flex flex-col">
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Evolução do Score</h4>
+            <div className="h-48 flex-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={scoreHistory}>
+                  <defs>
+                    <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={isMale ? "#3b82f6" : "#f43f5e"} stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor={isMale ? "#3b82f6" : "#f43f5e"} stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="semana" 
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                    axisLine={false}
+                    tickLine={false}
+                    label={{ value: "Semana", position: "insideBottom", offset: -5, fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                  />
+                  <YAxis 
+                    domain={[0, 100]} 
+                    tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={30}
+                  />
+                  <Tooltip content={<CustomLineTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="score"
+                    stroke={isMale ? "#3b82f6" : "#f43f5e"}
+                    strokeWidth={2}
+                    fill="url(#scoreGradient)"
+                  />
+                  {/* Reference line at 80% (healthy threshold) */}
+                  <Line
+                    type="monotone"
+                    dataKey={() => 80}
+                    stroke="#10b981"
+                    strokeWidth={1}
+                    strokeDasharray="5 5"
+                    dot={false}
+                    name="Meta Saudável"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex items-center justify-center gap-4 mt-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <div className={`w-3 h-0.5 ${isMale ? "bg-blue-500" : "bg-rose-500"}`} />
+                <span>Score</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-0.5 bg-emerald-500" style={{ borderTop: "1px dashed" }} />
+                <span>Meta 80%</span>
+              </div>
+            </div>
+          </div>
         </div>
         
         {/* Legend with actual values */}
