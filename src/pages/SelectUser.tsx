@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import ComparativeCharts from "@/components/ComparativeCharts";
 import ProteinCalculator from "@/components/ProteinCalculator";
+import NotificationCenter from "@/components/NotificationCenter";
 import { toast } from "sonner";
 import reneerAvatar from "@/assets/reneer-avatar.png";
 import anaPaulaAvatar from "@/assets/ana-paula-avatar.png";
@@ -376,7 +377,8 @@ const SelectUser = () => {
             <ArrowLeft className="w-4 h-4" />
             Sair
           </Button>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
+            <NotificationCenter isAdmin={isAdmin} />
             <Button
               variant={showComparison ? "default" : "outline"}
               className="gap-2"

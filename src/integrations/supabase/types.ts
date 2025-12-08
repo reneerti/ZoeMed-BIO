@@ -137,6 +137,51 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          change_value: number | null
+          created_at: string
+          id: string
+          is_positive: boolean | null
+          is_read: boolean | null
+          message: string
+          metric_name: string | null
+          new_value: number | null
+          notification_type: string
+          old_value: number | null
+          title: string
+          user_person: string
+        }
+        Insert: {
+          change_value?: number | null
+          created_at?: string
+          id?: string
+          is_positive?: boolean | null
+          is_read?: boolean | null
+          message: string
+          metric_name?: string | null
+          new_value?: number | null
+          notification_type: string
+          old_value?: number | null
+          title: string
+          user_person: string
+        }
+        Update: {
+          change_value?: number | null
+          created_at?: string
+          id?: string
+          is_positive?: boolean | null
+          is_read?: boolean | null
+          message?: string
+          metric_name?: string | null
+          new_value?: number | null
+          notification_type?: string
+          old_value?: number | null
+          title?: string
+          user_person?: string
+        }
+        Relationships: []
+      }
       supplementation: {
         Row: {
           created_at: string
