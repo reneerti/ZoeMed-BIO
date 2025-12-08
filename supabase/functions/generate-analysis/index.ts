@@ -43,6 +43,8 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    console.log(`Generating analysis for user: ${userPerson}`);
+
     // Fetch all bioimpedance data for the user
     const { data: records, error: dbError } = await supabase
       .from("bioimpedance")
@@ -51,6 +53,7 @@ serve(async (req) => {
       .order("measurement_date", { ascending: true });
 
     if (dbError) {
+      console.error("Database error:", dbError);
       throw new Error(`Database error: ${dbError.message}`);
     }
 
@@ -73,6 +76,8 @@ serve(async (req) => {
     const fatChange = Number(latest.body_fat_percent) - Number(first.body_fat_percent);
     const muscleChange = Number(latest.muscle_rate_percent) - Number(first.muscle_rate_percent);
     const totalWeeks = records.length;
+
+    console.log(`Generating AI insights for ${userName}...`);
 
     // Generate comprehensive insights
     const insightsResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -148,11 +153,75 @@ ${JSON.stringify(records.slice(-10), null, 2)}`,
     if (!insightsResponse.ok) {
       const errorText = await insightsResponse.text();
       console.error("AI Gateway error:", insightsResponse.status, errorText);
+      
+      if (insightsResponse.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limits exceeded, please try again later." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (insightsResponse.status === 402) {
+        return new Response(JSON.stringify({ error: "Payment required, please add funds." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       throw new Error(`AI Gateway error: ${insightsResponse.status}`);
     }
 
     const insightsResult = await insightsResponse.json();
     const insights = insightsResult.choices?.[0]?.message?.content || "";
+
+    console.log("AI insights generated successfully");
+
+    // Generate a short summary for the history list
+    const summaryResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-lite",
+        messages: [
+          {
+            role: "system",
+            content: "Crie um resumo de 1-2 linhas (máximo 100 caracteres) desta análise de bioimpedância. Destaque o ponto principal (ex: 'Perda de 5kg, melhora na composição corporal'). Seja objetivo.",
+          },
+          {
+            role: "user",
+            content: insights,
+          },
+        ],
+      }),
+    });
+
+    let summary = `Análise: Peso ${Number(latest.weight).toFixed(1)}kg, IMC ${Number(latest.bmi).toFixed(1)}`;
+    if (summaryResponse.ok) {
+      const summaryResult = await summaryResponse.json();
+      summary = summaryResult.choices?.[0]?.message?.content || summary;
+    }
+
+    console.log("Saving analysis to history...");
+
+    // Save to history
+    const { error: insertError } = await supabase
+      .from("ai_analysis_history")
+      .insert({
+        user_person: userPerson,
+        summary: summary.substring(0, 200),
+        full_analysis: insights,
+        weight_at_analysis: Number(latest.weight),
+        bmi_at_analysis: Number(latest.bmi),
+        fat_at_analysis: Number(latest.body_fat_percent),
+      });
+
+    if (insertError) {
+      console.error("Error saving analysis to history:", insertError);
+      // Don't fail the request, just log the error
+    } else {
+      console.log("Analysis saved to history successfully");
+    }
 
     return new Response(
       JSON.stringify({

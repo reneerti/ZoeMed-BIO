@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_analysis_history: {
+        Row: {
+          analysis_date: string
+          bmi_at_analysis: number | null
+          created_at: string
+          fat_at_analysis: number | null
+          full_analysis: string
+          id: string
+          summary: string
+          user_person: string
+          weight_at_analysis: number | null
+        }
+        Insert: {
+          analysis_date?: string
+          bmi_at_analysis?: number | null
+          created_at?: string
+          fat_at_analysis?: number | null
+          full_analysis: string
+          id?: string
+          summary: string
+          user_person: string
+          weight_at_analysis?: number | null
+        }
+        Update: {
+          analysis_date?: string
+          bmi_at_analysis?: number | null
+          created_at?: string
+          fat_at_analysis?: number | null
+          full_analysis?: string
+          id?: string
+          summary?: string
+          user_person?: string
+          weight_at_analysis?: number | null
+        }
+        Relationships: []
+      }
       bioimpedance: {
         Row: {
           bmi: number | null

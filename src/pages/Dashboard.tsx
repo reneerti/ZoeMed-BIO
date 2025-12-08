@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Download, Plus } from "lucide-react";
+import { ArrowLeft, Download, Plus, Brain, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BioimpedanceTable from "@/components/BioimpedanceTable";
 import AnaPaulaProtocol from "@/components/AnaPaulaProtocol";
 import ReneerProtocol from "@/components/ReneerProtocol";
+import AnalysisHistory from "@/components/AnalysisHistory";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { toast } from "sonner";
 
 interface BioimpedanceRecord {
   id: string;
@@ -45,6 +47,8 @@ const Dashboard = () => {
   const { isAdmin } = useUserRole();
   const [records, setRecords] = useState<BioimpedanceRecord[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisKey, setAnalysisKey] = useState(0);
 
   const isReneer = person === "reneer";
   const personName = isReneer ? "Reneer" : "Ana Paula";
@@ -74,6 +78,26 @@ const Dashboard = () => {
       console.error("Error loading data:", error);
     } finally {
       setDataLoading(false);
+    }
+  };
+
+  const generateAnalysis = async () => {
+    setAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-analysis", {
+        body: { userPerson: person },
+      });
+
+      if (error) throw error;
+      if (data?.insights) {
+        toast.success("Análise gerada e salva no histórico!");
+        setAnalysisKey(prev => prev + 1); // Refresh history
+      }
+    } catch (error) {
+      console.error("Error generating analysis:", error);
+      toast.error("Erro ao gerar análise");
+    } finally {
+      setAnalyzing(false);
     }
   };
 
@@ -125,12 +149,27 @@ const Dashboard = () => {
             <ArrowLeft className="w-4 h-4" />
             Voltar
           </Button>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {isAdmin && (
-              <Button variant="outline" className="gap-2" onClick={() => navigate("/adicionar")}>
-                <Plus className="w-4 h-4" />
-                Adicionar
-              </Button>
+              <>
+                <Button 
+                  variant="outline" 
+                  className="gap-2 border-violet-500/50 hover:bg-violet-500/10" 
+                  onClick={generateAnalysis}
+                  disabled={analyzing}
+                >
+                  {analyzing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Brain className="w-4 h-4 text-violet-500" />
+                  )}
+                  {analyzing ? "Analisando..." : "Gerar Análise IA"}
+                </Button>
+                <Button variant="outline" className="gap-2" onClick={() => navigate("/adicionar")}>
+                  <Plus className="w-4 h-4" />
+                  Adicionar
+                </Button>
+              </>
             )}
             <Button variant="outline" className="gap-2" onClick={exportToCSV}>
               <Download className="w-4 h-4" />
@@ -290,11 +329,12 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Tabs for Data and Protocol */}
+        {/* Tabs for Data, Protocol and AI History */}
         <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="dados">📊 Dados</TabsTrigger>
             <TabsTrigger value="protocolo">📋 Protocolo</TabsTrigger>
+            <TabsTrigger value="analises">🤖 Análises IA</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dados">
@@ -311,6 +351,10 @@ const Dashboard = () => {
 
           <TabsContent value="protocolo">
             {isReneer ? <ReneerProtocol isAdmin={isAdmin} /> : <AnaPaulaProtocol isAdmin={isAdmin} />}
+          </TabsContent>
+
+          <TabsContent value="analises">
+            <AnalysisHistory key={analysisKey} userPerson={person || ""} isAdmin={isAdmin} />
           </TabsContent>
         </Tabs>
       </div>
