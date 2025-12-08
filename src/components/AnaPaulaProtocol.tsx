@@ -19,6 +19,8 @@ interface LatestAnalysis {
 
 const AnaPaulaProtocol = ({ isAdmin = false, onGenerateAnalysis, isGeneratingAnalysis = false }: AnaPaulaProtocolProps) => {
   const [latestAnalysis, setLatestAnalysis] = useState<LatestAnalysis | null>(null);
+  const [hasNewAnalysis, setHasNewAnalysis] = useState(false);
+  const [previousAnalysisDate, setPreviousAnalysisDate] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLatestAnalysis = async () => {
@@ -30,19 +32,36 @@ const AnaPaulaProtocol = ({ isAdmin = false, onGenerateAnalysis, isGeneratingAna
         .limit(1)
         .maybeSingle();
       
-      if (data) setLatestAnalysis(data);
+      if (data) {
+        // Check if this is a new analysis
+        if (previousAnalysisDate && data.analysis_date !== previousAnalysisDate) {
+          setHasNewAnalysis(true);
+          // Auto-dismiss after 5 seconds
+          setTimeout(() => setHasNewAnalysis(false), 5000);
+        }
+        setPreviousAnalysisDate(data.analysis_date);
+        setLatestAnalysis(data);
+      }
     };
     fetchLatestAnalysis();
-  }, [isGeneratingAnalysis]);
+  }, [isGeneratingAnalysis, previousAnalysisDate]);
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Último Resumo IA */}
-      <Card className="card-elevated border-0 border-l-4 border-l-rose-500 bg-gradient-to-r from-rose-500/5 to-pink-500/5">
+      <Card className={`card-elevated border-0 border-l-4 border-l-rose-500 bg-gradient-to-r from-rose-500/5 to-pink-500/5 transition-all duration-300 ${hasNewAnalysis ? 'ring-2 ring-rose-500 animate-pulse' : ''}`}>
         <CardHeader className="pb-2">
           <CardTitle className="font-serif text-lg flex items-center gap-2">
-            <Brain className="h-5 w-5 text-rose-500" />
+            <div className="relative">
+              <Brain className="h-5 w-5 text-rose-500" />
+              {hasNewAnalysis && (
+                <span className="absolute -top-1 -right-1 h-3 w-3 bg-rose-500 rounded-full animate-ping" />
+              )}
+            </div>
             Último Resumo IA
+            {hasNewAnalysis && (
+              <Badge className="bg-rose-500 text-white text-xs animate-bounce">Nova!</Badge>
+            )}
             {onGenerateAnalysis && (
               <Button
                 onClick={onGenerateAnalysis}
