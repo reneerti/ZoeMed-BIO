@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Brain } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import SupplementationCard from "./SupplementationCard";
 
 interface ReneerProtocolProps {
@@ -10,26 +12,71 @@ interface ReneerProtocolProps {
   isGeneratingAnalysis?: boolean;
 }
 
+interface LatestAnalysis {
+  summary: string;
+  analysis_date: string;
+}
+
 const ReneerProtocol = ({ isAdmin = false, onGenerateAnalysis, isGeneratingAnalysis = false }: ReneerProtocolProps) => {
+  const [latestAnalysis, setLatestAnalysis] = useState<LatestAnalysis | null>(null);
+
+  useEffect(() => {
+    const fetchLatestAnalysis = async () => {
+      const { data } = await supabase
+        .from("ai_analysis_history")
+        .select("summary, analysis_date")
+        .eq("user_person", "reneer")
+        .order("analysis_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (data) setLatestAnalysis(data);
+    };
+    fetchLatestAnalysis();
+  }, [isGeneratingAnalysis]);
+
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Botão de Análise IA */}
-      {onGenerateAnalysis && (
-        <div className="flex justify-end">
-          <Button
-            onClick={onGenerateAnalysis}
-            disabled={isGeneratingAnalysis}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-          >
-            {isGeneratingAnalysis ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
+      {/* Último Resumo IA */}
+      <Card className="card-elevated border-0 border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-500/5 to-blue-500/5">
+        <CardHeader className="pb-2">
+          <CardTitle className="font-serif text-lg flex items-center gap-2">
+            <Brain className="h-5 w-5 text-indigo-500" />
+            Último Resumo IA
+            {onGenerateAnalysis && (
+              <Button
+                onClick={onGenerateAnalysis}
+                disabled={isGeneratingAnalysis}
+                size="sm"
+                className="ml-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+              >
+                {isGeneratingAnalysis ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4 mr-1" />
+                )}
+                {isGeneratingAnalysis ? "Gerando..." : "Nova Análise"}
+              </Button>
             )}
-            {isGeneratingAnalysis ? "Gerando Análise..." : "Gerar Análise IA"}
-          </Button>
-        </div>
-      )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {latestAnalysis ? (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">{latestAnalysis.summary}</p>
+              <p className="text-xs text-muted-foreground/70">
+                Gerado em: {new Date(latestAnalysis.analysis_date).toLocaleDateString('pt-BR', { 
+                  day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+                })}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">
+              Nenhuma análise gerada ainda. Clique em "Nova Análise" para gerar.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Resumo do Protocolo */}
       <Card className="card-elevated border-0 border-l-4 border-l-blue-500">
