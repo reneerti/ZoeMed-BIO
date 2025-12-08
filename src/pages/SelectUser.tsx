@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, TrendingDown, TrendingUp, Scale, Activity, Plus, BarChart3, Camera } from "lucide-react";
+import { ArrowLeft, TrendingDown, TrendingUp, Scale, Activity, Plus, BarChart3, Camera, Upload, Sparkles, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import ComparativeCharts from "@/components/ComparativeCharts";
@@ -270,30 +270,30 @@ const SelectUser = () => {
             <>
               {/* Summary Cards */}
               <div className="grid grid-cols-3 gap-2 mb-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 text-center">
-                  <p className="text-[10px] text-white/70 uppercase">Peso</p>
-                  <p className="text-sm font-bold text-white">{data.latestWeight.toFixed(1)} kg</p>
+                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 text-center overflow-hidden">
+                  <p className="text-[10px] text-white/70 uppercase truncate">Peso</p>
+                  <p className="text-sm font-bold text-white truncate">{data.latestWeight.toFixed(1)} kg</p>
                   <span className={`text-[10px] ${data.weightChange < 0 ? 'text-emerald-300' : 'text-red-300'}`}>
                     {data.weightChange < 0 ? '↓' : '↑'} {Math.abs((data.weightChange / data.initialWeight) * 100).toFixed(1)}%
                   </span>
                 </div>
-                <div className="p-2 rounded-lg bg-gradient-to-br from-rose-500 to-rose-700 text-center">
-                  <p className="text-[10px] text-white/70 uppercase">Gordura</p>
-                  <p className="text-sm font-bold text-white">{data.latestFat.toFixed(1)}%</p>
+                <div className="p-2 rounded-lg bg-gradient-to-br from-rose-500 to-rose-700 text-center overflow-hidden">
+                  <p className="text-[10px] text-white/70 uppercase truncate">Gordura</p>
+                  <p className="text-sm font-bold text-white truncate">{data.latestFat.toFixed(1)}%</p>
                 </div>
-                <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 text-center">
-                  <p className="text-[10px] text-white/70 uppercase">Músculo</p>
-                  <p className="text-sm font-bold text-white">{data.latestMuscle.toFixed(1)}%</p>
+                <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 text-center overflow-hidden">
+                  <p className="text-[10px] text-white/70 uppercase truncate">Músculo</p>
+                  <p className="text-sm font-bold text-white truncate">{data.latestMuscle.toFixed(1)}%</p>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 text-center">
-                  <p className="text-[10px] text-white/70 uppercase">IMC</p>
-                  <p className="text-sm font-bold text-white">{data.latestBmi.toFixed(1)}</p>
+                <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 text-center overflow-hidden">
+                  <p className="text-[10px] text-white/70 uppercase truncate">IMC</p>
+                  <p className="text-sm font-bold text-white truncate">{data.latestBmi.toFixed(1)}</p>
                 </div>
-                <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 text-center">
-                  <p className="text-[10px] text-white/70 uppercase">G. Visceral</p>
-                  <p className="text-sm font-bold text-white">{data.latestVisceralFat.toFixed(0)}</p>
+                <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-orange-700 text-center overflow-hidden">
+                  <p className="text-[10px] text-white/70 uppercase truncate">G. Visceral</p>
+                  <p className="text-sm font-bold text-white truncate">{data.latestVisceralFat.toFixed(0)}</p>
                 </div>
                 <ProteinCalculator weight={data.latestWeight} person={person} />
               </div>
@@ -376,7 +376,7 @@ const SelectUser = () => {
             <ArrowLeft className="w-4 h-4" />
             Sair
           </Button>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant={showComparison ? "default" : "outline"}
               className="gap-2"
@@ -386,14 +386,24 @@ const SelectUser = () => {
               {showComparison ? "Ver Perfis" : "Comparar"}
             </Button>
             {isAdmin && (
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => navigate("/adicionar")}
-              >
-                <Plus className="w-4 h-4" />
-                Adicionar
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => navigate("/upload")}
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => navigate("/adicionar")}
+                >
+                  <Plus className="w-4 h-4" />
+                  Adicionar
+                </Button>
+              </>
             )}
           </div>
         </div>
