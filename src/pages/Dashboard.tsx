@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ArrowLeft, Download, Plus, Brain, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BioimpedanceTable from "@/components/BioimpedanceTable";
 import AnaPaulaProtocol from "@/components/AnaPaulaProtocol";
@@ -261,38 +262,53 @@ const Dashboard = () => {
           ];
 
           return (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-8 animate-slide-up">
-              {summaryItems.map((item, i) => (
-                <Card key={i} className={`card-elevated border-0 ${item.bg} shadow-lg overflow-hidden min-w-0`}>
-                  <CardContent className="p-2 md:p-3 text-center relative overflow-hidden">
-                    <p className={`text-[9px] md:text-[10px] uppercase tracking-wide mb-0.5 truncate ${item.textColor ? item.textColor + '/70' : 'text-white/70'}`}>
-                      {item.label}
-                    </p>
-                    <p className={`text-base md:text-xl font-serif font-bold leading-tight truncate ${item.textColor || 'text-white'}`}>
-                      {item.value}
-                    </p>
-                    <span className={`text-[9px] md:text-[10px] font-medium block truncate ${item.performance.color}`}>
-                      {item.performance.icon} {item.performance.percent}
-                    </span>
-                    {item.sparkData.length > 1 && (
-                      <div className="h-6 md:h-8 mt-1 -mx-2 md:-mx-3 -mb-2 md:-mb-3">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart data={item.sparkData}>
-                            <Line 
-                              type="monotone" 
-                              dataKey="v" 
-                              stroke={item.performance.stroke}
-                              strokeWidth={1.5}
-                              dot={false}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
+            <TooltipProvider>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-8 animate-slide-up">
+                {summaryItems.map((item, i) => (
+                  <Tooltip key={i}>
+                    <TooltipTrigger asChild>
+                      <Card className={`card-elevated border-0 ${item.bg} shadow-lg overflow-hidden min-w-0 cursor-pointer hover:scale-[1.02] transition-transform`}>
+                        <CardContent className="p-2 md:p-3 text-center relative overflow-hidden">
+                          <p className={`text-[9px] md:text-[10px] uppercase tracking-wide mb-0.5 truncate ${item.textColor ? item.textColor + '/70' : 'text-white/70'}`}>
+                            {item.label}
+                          </p>
+                          <p className={`text-base md:text-xl font-serif font-bold leading-tight truncate ${item.textColor || 'text-white'}`}>
+                            {item.value}
+                          </p>
+                          <span className={`text-[9px] md:text-[10px] font-medium block truncate ${item.performance.color}`}>
+                            {item.performance.icon} {item.performance.percent}
+                          </span>
+                          {item.sparkData.length > 1 && (
+                            <div className="h-6 md:h-8 mt-1 -mx-2 md:-mx-3 -mb-2 md:-mb-3">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={item.sparkData}>
+                                  <Line 
+                                    type="monotone" 
+                                    dataKey="v" 
+                                    stroke={item.performance.stroke}
+                                    strokeWidth={1.5}
+                                    dot={false}
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-slate-900 border-slate-700 text-white max-w-[200px]">
+                      <div className="text-center">
+                        <p className="font-bold text-sm">{item.label}</p>
+                        <p className="text-lg">{item.value}</p>
+                        <p className={`text-sm ${item.performance.color}`}>
+                          Variação: {item.performance.icon} {item.performance.percent}
+                        </p>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+            </TooltipProvider>
           );
         })()}
 
@@ -308,7 +324,7 @@ const Dashboard = () => {
                   <LineChart data={chartData}>
                     <XAxis dataKey="semana" />
                     <YAxis domain={['dataMin - 2', 'dataMax + 2']} />
-                    <Tooltip />
+                    <RechartsTooltip />
                     <Line type="monotone" dataKey="peso" stroke={isReneer ? '#3b82f6' : '#FF6B6B'} strokeWidth={2} name="Peso (kg)" />
                   </LineChart>
                 </ResponsiveContainer>
@@ -326,7 +342,7 @@ const Dashboard = () => {
                   <LineChart data={chartData}>
                     <XAxis dataKey="semana" />
                     <YAxis domain={[20, 70]} />
-                    <Tooltip />
+                    <RechartsTooltip />
                     <Legend />
                     <Line type="monotone" dataKey="gordura" stroke="#FF6B6B" strokeWidth={2} name="Gordura (%)" />
                     <Line type="monotone" dataKey="musculo" stroke="#06D6A0" strokeWidth={2} name="Músculo (%)" />

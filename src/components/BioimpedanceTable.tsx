@@ -113,33 +113,38 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
   return (
     <TooltipProvider>
       <div className="relative overflow-hidden rounded-lg border border-slate-500 bg-slate-900">
-        <div className="overflow-x-auto">
-          <Table>
+        {/* Mobile hint */}
+        <div className="md:hidden px-3 py-2 bg-slate-800 text-xs text-slate-400 border-b border-slate-600 flex items-center gap-2">
+          <span>👆</span>
+          <span>Deslize para ver mais colunas</span>
+        </div>
+        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+          <Table className="min-w-[800px]">
             <TableHeader>
               <TableRow className="bg-slate-900 hover:bg-slate-900">
-                <TableHead className="text-white font-bold w-20 text-center sticky left-0 z-20 bg-blue-800 border-r-2 border-violet-400">Semana</TableHead>
-                <TableHead className="text-cyan-300 font-bold w-24 text-center border-r border-slate-600">Monjaro</TableHead>
-                <TableHead className="text-cyan-300 font-bold w-28 text-center border-r border-slate-600">Status</TableHead>
+                <TableHead className="text-white font-bold w-14 md:w-20 text-center sticky left-0 z-20 bg-blue-800 border-r-2 border-violet-400 text-xs md:text-sm whitespace-nowrap">Sem.</TableHead>
+                <TableHead className="text-cyan-300 font-bold w-16 md:w-24 text-center border-r border-slate-600 text-xs md:text-sm whitespace-nowrap">Monjaro</TableHead>
+                <TableHead className="text-cyan-300 font-bold w-20 md:w-28 text-center border-r border-slate-600 text-xs md:text-sm whitespace-nowrap">Status</TableHead>
                 {columns.map((col) => (
                   <>
                     <TableHead 
                       key={col.key} 
-                      className="text-cyan-300 font-bold text-center min-w-[85px] cursor-pointer hover:bg-slate-800 transition-colors border-r border-slate-600"
+                      className="text-cyan-300 font-bold text-center min-w-[70px] md:min-w-[85px] cursor-pointer hover:bg-slate-800 transition-colors border-r border-slate-600 text-xs md:text-sm whitespace-nowrap"
                       onClick={() => toggleColumn(col.key)}
                     >
-                      <div className="flex items-center justify-center gap-1">
-                        <span>{col.label}</span>
+                      <div className="flex items-center justify-center gap-0.5 md:gap-1">
+                        <span className="truncate">{col.label}</span>
                         {expandedCols.has(col.key) ? (
-                          <Minus className="w-3 h-3 text-rose-400" />
+                          <Minus className="w-2.5 h-2.5 md:w-3 md:h-3 text-rose-400 flex-shrink-0" />
                         ) : (
-                          <Plus className="w-3 h-3 text-lime-400" />
+                          <Plus className="w-2.5 h-2.5 md:w-3 md:h-3 text-lime-400 flex-shrink-0" />
                         )}
                       </div>
                     </TableHead>
                     {expandedCols.has(col.key) && (
                       <TableHead 
                         key={`${col.key}-diff`} 
-                        className="text-slate-600 font-semibold text-center min-w-[75px] bg-slate-100 border-r border-slate-300"
+                        className="text-slate-600 font-semibold text-center min-w-[60px] md:min-w-[75px] bg-slate-100 border-r border-slate-300 text-xs"
                       >
                         Δ Meta
                       </TableHead>
@@ -151,24 +156,24 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
             <TableBody>
               {/* Linha 0: Parâmetros de referência */}
               <TableRow className="bg-violet-900 hover:bg-violet-900 border-b-2 border-violet-400">
-                <TableCell className="font-bold text-center text-white sticky left-0 z-20 bg-blue-900 border-r-2 border-violet-400">IDEAL</TableCell>
-                <TableCell className="text-center text-violet-200 border-r border-slate-500">-</TableCell>
-                <TableCell className="text-center text-violet-200 border-r border-slate-500">Meta</TableCell>
+                <TableCell className="font-bold text-center text-white sticky left-0 z-20 bg-blue-900 border-r-2 border-violet-400 text-xs md:text-sm">IDEAL</TableCell>
+                <TableCell className="text-center text-violet-200 border-r border-slate-500 text-xs md:text-sm">-</TableCell>
+                <TableCell className="text-center text-violet-200 border-r border-slate-500 text-xs md:text-sm">Meta</TableCell>
                 {columns.map((col) => {
                   const param = params[col.key];
                   return (
                     <>
                       <TableCell 
                         key={col.key} 
-                        className="text-center text-white font-semibold border-r border-slate-500"
+                        className="text-center text-white font-semibold border-r border-slate-500 text-xs md:text-sm"
                       >
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-help underline decoration-dotted decoration-violet-300">
+                            <span className="cursor-help underline decoration-dotted decoration-violet-300 truncate block">
                               {param.ideal !== null ? `${param.ideal}${param.unit ? ` ${param.unit}` : ''}` : '-'}
                             </span>
                           </TooltipTrigger>
-                          <TooltipContent className="bg-slate-800 text-white border-violet-500 max-w-xs">
+                          <TooltipContent className="bg-slate-800 text-white border-violet-500 max-w-xs z-50">
                             <p className="text-sm">{param.tooltip}</p>
                           </TooltipContent>
                         </Tooltip>
@@ -176,7 +181,7 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
                     {expandedCols.has(col.key) && (
                       <TableCell 
                         key={`${col.key}-diff`} 
-                        className="text-center text-slate-400 bg-slate-50 border-r border-slate-200"
+                        className="text-center text-slate-400 bg-slate-50 border-r border-slate-200 text-xs"
                       >
                         -
                       </TableCell>
@@ -197,11 +202,11 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
                     key={record.id} 
                     className={`${rowBg} hover:bg-slate-600`}
                   >
-                    <TableCell className="font-bold text-center text-white sticky left-0 z-20 bg-blue-800 border-r-2 border-violet-400">
+                    <TableCell className="font-bold text-center text-white sticky left-0 z-20 bg-blue-800 border-r-2 border-violet-400 text-xs md:text-sm">
                       {record.week_number} {isHiato && '⚠️'}
                     </TableCell>
-                    <TableCell className="text-center text-slate-300 border-r border-slate-600">{record.monjaro_dose} mg</TableCell>
-                    <TableCell className="text-center text-slate-300 border-r border-slate-600 text-xs">{record.status}</TableCell>
+                    <TableCell className="text-center text-slate-300 border-r border-slate-600 text-xs md:text-sm whitespace-nowrap">{record.monjaro_dose} mg</TableCell>
+                    <TableCell className="text-center text-slate-300 border-r border-slate-600 text-[10px] md:text-xs truncate max-w-[80px] md:max-w-none">{record.status}</TableCell>
                     {columns.map((col) => {
                       const value = Number((record as any)[col.key]);
                       const prevValue = prev ? Number((prev as any)[col.key]) : null;
@@ -212,14 +217,14 @@ const BioimpedanceTable = ({ records, isReneer }: Props) => {
                         <>
                           <TableCell 
                             key={col.key} 
-                            className={`text-center border-r border-slate-600 ${getTextColor(value, prevValue, param.lowerIsBetter)}`}
+                            className={`text-center border-r border-slate-600 text-xs md:text-sm whitespace-nowrap ${getTextColor(value, prevValue, param.lowerIsBetter)}`}
                           >
                             {col.format(value)}
                           </TableCell>
                           {expandedCols.has(col.key) && (
                             <TableCell 
                               key={`${col.key}-diff`} 
-                              className={`text-center ${diffInfo.bg} text-sm font-semibold border-r border-slate-200 ${diffInfo.color}`}
+                              className={`text-center ${diffInfo.bg} text-xs font-semibold border-r border-slate-200 ${diffInfo.color}`}
                             >
                               {diffInfo.diff !== null ? diffInfo.label : '-'}
                             </TableCell>
