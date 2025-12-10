@@ -1,16 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { 
-  Users, Activity, Settings, BarChart3, Search, 
-  Plus, ArrowLeft, LogOut, TrendingUp, TrendingDown,
-  UserPlus, Edit, Trash2, Eye
+  Users, Activity, Settings, BarChart3, 
+  ArrowLeft, LogOut, TrendingUp, TrendingDown
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -45,7 +41,7 @@ interface DashboardStats {
 
 const MasterDashboard = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
   const { isAdmin, loading: roleLoading } = useUserRole();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [stats, setStats] = useState<DashboardStats>({
@@ -73,7 +69,6 @@ const MasterDashboard = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      // Load patients
       const { data: patientsData, error: patientsError } = await supabase
         .from("patients")
         .select("*")
@@ -81,7 +76,6 @@ const MasterDashboard = () => {
 
       if (patientsError) throw patientsError;
 
-      // Load bioimpedance data for stats
       const { data: bioData, error: bioError } = await supabase
         .from("bioimpedance")
         .select("patient_id, weight, bmi, measurement_date")
@@ -89,13 +83,11 @@ const MasterDashboard = () => {
 
       if (bioError) throw bioError;
 
-      // Calculate stats per patient
       const patientsWithStats = (patientsData || []).map(patient => {
         const patientBio = bioData?.filter(b => b.patient_id === patient.id) || [];
         const latestWeight = patientBio[0]?.weight;
         const latestBmi = patientBio[0]?.bmi;
         
-        // Calculate weight change
         let weightChange = 0;
         if (patientBio.length >= 2) {
           const firstWeight = patientBio[patientBio.length - 1]?.weight;
@@ -114,11 +106,9 @@ const MasterDashboard = () => {
 
       setPatients(patientsWithStats);
 
-      // Calculate dashboard stats
       const activeCount = patientsData?.filter(p => p.status === "active").length || 0;
       const totalBio = bioData?.length || 0;
       
-      // Calculate average weight loss
       const weightChanges = patientsWithStats
         .filter(p => p.weightChange !== undefined && p.weightChange !== 0)
         .map(p => p.weightChange || 0);
@@ -170,19 +160,20 @@ const MasterDashboard = () => {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div className="flex items-center gap-3">
-              <img src={logo} alt="ZOEMEDBio" className="h-10 object-contain" />
-              <div>
-                <h1 className="text-xl font-serif font-bold">ZOEMEDBio Master</h1>
-                <p className="text-xs text-muted-foreground">Painel Administrativo</p>
+                <img src={logo} alt="ZOEMEDBio" className="h-10 object-contain" />
+                <div>
+                  <h1 className="text-xl font-serif font-bold">ZOEMEDBio Master</h1>
+                  <p className="text-xs text-muted-foreground">Painel Administrativo</p>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <PdfReportGenerator patients={patients} />
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
+            <div className="flex items-center gap-2">
+              <PdfReportGenerator patients={patients} />
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -277,24 +268,6 @@ const MasterDashboard = () => {
 
           <TabsContent value="gamification">
             <GamificationDashboard patients={patients} />
-          </TabsContent>
-
-          <TabsContent value="reports">
-            <MasterReports patients={patients} />
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <CustomFieldsConfig />
-          </TabsContent>
-        </Tabs>
-
-          <TabsContent value="patients">
-            <PatientManagement 
-              patients={filteredPatients} 
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              onRefresh={loadData}
-            />
           </TabsContent>
 
           <TabsContent value="reports">

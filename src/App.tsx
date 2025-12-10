@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import SelectUser from "./pages/SelectUser";
 import Dashboard from "./pages/Dashboard";
 import AddMeasurement from "./pages/AddMeasurement";
+import AddPatientMeasurement from "./pages/AddPatientMeasurement";
 import Upload from "./pages/Upload";
 import Install from "./pages/Install";
 import MasterDashboard from "./pages/MasterDashboard";
@@ -34,7 +35,7 @@ const App = () => (
             <Route path="/instalar" element={<Install />} />
             <Route path="/master" element={<MasterDashboard />} />
             <Route path="/paciente/:patientId" element={<PatientDashboard />} />
-            <Route path="/adicionar-medida/:patientId" element={<AddMeasurement />} />
+            <Route path="/adicionar-medida/:patientId" element={<AddPatientMeasurement />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
