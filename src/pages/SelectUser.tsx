@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, TrendingDown, TrendingUp, Scale, Activity, Plus, BarChart3, Camera, Upload, Sparkles, Loader2, Users } from "lucide-react";
+import { ArrowLeft, BarChart3, Camera, Upload, Plus, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import ComparativeCharts from "@/components/ComparativeCharts";
@@ -88,19 +88,16 @@ const SelectUser = () => {
       const fileName = `${person}-avatar-${Date.now()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;
 
-      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('bioimpedance-images')
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from('bioimpedance-images')
         .getPublicUrl(filePath);
 
-      // Update profile with new avatar URL
       const { error: updateError } = await supabase
         .from('user_profiles')
         .update({ avatar_url: urlData.publicUrl })
@@ -214,9 +211,7 @@ const SelectUser = () => {
     };
 
     return (
-      <Card 
-        className="card-elevated border-0 overflow-hidden"
-      >
+      <Card className="card-elevated border-0 overflow-hidden">
         <div className={`h-1 ${bgClass}`} />
         <CardHeader className="pb-2">
           <div className="flex items-center gap-3">
@@ -270,7 +265,6 @@ const SelectUser = () => {
         >
           {data ? (
             <>
-              {/* Summary Cards */}
               <div className="grid grid-cols-3 gap-2 mb-3">
                 <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 text-center overflow-hidden">
                   <p className="text-[10px] text-white/70 uppercase truncate">Peso</p>
@@ -403,19 +397,6 @@ const SelectUser = () => {
                   className="gap-2"
                   onClick={() => navigate("/upload")}
                 >
-                  <Upload className="w-4 h-4" />
-                  Upload
-                </Button>
-                <Button
-                  variant="outline"
-                  className="gap-2"
-                  onClick={() => navigate("/adicionar")}
-                >
-                  <Plus className="w-4 h-4" />
-                  Adicionar
-                </Button>
-              </>
-            )}
                   <Upload className="w-4 h-4" />
                   Upload
                 </Button>
