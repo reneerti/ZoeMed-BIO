@@ -5,20 +5,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { 
-  Search, Plus, Edit, Trash2, Eye, TrendingUp, TrendingDown,
-  UserPlus, MoreVertical
+  Search, Edit, Trash2, Eye, TrendingUp, TrendingDown,
+  UserPlus, MoreVertical, Key, Power, PowerOff
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -41,6 +42,7 @@ interface Patient {
   status: string;
   avatar_url: string | null;
   created_at: string;
+  user_id?: string | null;
   latestWeight?: number;
   latestBmi?: number;
   weightChange?: number;
@@ -61,8 +63,11 @@ const PatientManagement = ({ patients, searchQuery, setSearchQuery, onRefresh }:
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   
   // Form state
   const [formData, setFormData] = useState({
@@ -183,6 +188,69 @@ const PatientManagement = ({ patients, searchQuery, setSearchQuery, onRefresh }:
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleToggleStatus = async (patient: Patient) => {
+    const newStatus = patient.status === "active" ? "inactive" : "active";
+    
+    try {
+      const { error } = await supabase.from("patients")
+        .update({ status: newStatus })
+        .eq("id", patient.id);
+
+      if (error) throw error;
+
+      toast.success(`Paciente ${newStatus === "active" ? "ativado" : "desativado"} com sucesso!`);
+      onRefresh();
+    } catch (error) {
+      console.error("Error toggling status:", error);
+      toast.error("Erro ao alterar status do paciente");
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!selectedPatient?.user_id) {
+      toast.error("Este paciente não possui conta de usuário vinculada");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("As senhas não coincidem");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("update-user-password", {
+        body: { userId: selectedPatient.user_id, newPassword }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success("Senha alterada com sucesso!");
+      setPasswordDialogOpen(false);
+      setNewPassword("");
+      setConfirmPassword("");
+      setSelectedPatient(null);
+    } catch (error) {
+      console.error("Error changing password:", error);
+      toast.error(error instanceof Error ? error.message : "Erro ao alterar senha");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const openPasswordDialog = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setNewPassword("");
+    setConfirmPassword("");
+    setPasswordDialogOpen(true);
   };
 
   const openEditDialog = (patient: Patient) => {
@@ -310,6 +378,24 @@ const PatientManagement = ({ patients, searchQuery, setSearchQuery, onRefresh }:
                         <Edit className="w-4 h-4 mr-2" />
                         Editar
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openPasswordDialog(patient)}>
+                        <Key className="w-4 h-4 mr-2" />
+                        Alterar Senha
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleToggleStatus(patient)}>
+                        {patient.status === "active" ? (
+                          <>
+                            <PowerOff className="w-4 h-4 mr-2" />
+                            Desativar
+                          </>
+                        ) : (
+                          <>
+                            <Power className="w-4 h-4 mr-2" />
+                            Ativar
+                          </>
+                        )}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={() => {
                           setSelectedPatient(patient);
@@ -342,6 +428,54 @@ const PatientManagement = ({ patients, searchQuery, setSearchQuery, onRefresh }:
             isLoading={isLoading}
             submitLabel="Salvar"
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Change Dialog */}
+      <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Alterar Senha</DialogTitle>
+            <DialogDescription>
+              Alterar senha do paciente {selectedPatient?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="newPassword">Nova Senha</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repita a senha"
+                className="rounded-xl"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPasswordDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleChangePassword} 
+              disabled={isLoading || newPassword.length < 6 || newPassword !== confirmPassword}
+              className="gradient-primary"
+            >
+              {isLoading ? "Alterando..." : "Alterar Senha"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
