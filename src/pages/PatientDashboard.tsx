@@ -17,6 +17,8 @@ import BioimpedanceTable from "@/components/BioimpedanceTable";
 import MonjaroTracking from "@/components/MonjaroTracking";
 import GoalsProgress from "@/components/GoalsProgress";
 import MetricsRadarChart from "@/components/MetricsRadarChart";
+import { PatientScoreCard } from "@/components/PatientScoreCard";
+import { LeaderboardTop3 } from "@/components/LeaderboardTop3";
 
 interface Patient {
   id: string;
@@ -154,6 +156,12 @@ const PatientDashboard = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        {/* Score Card and Leaderboard */}
+        <div className="grid md:grid-cols-2 gap-4">
+          <PatientScoreCard patientId={patientId!} patientName={patient.name} />
+          <LeaderboardTop3 />
+        </div>
+
         {/* Current Stats */}
         {latestRecord && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">

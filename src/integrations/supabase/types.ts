@@ -270,6 +270,56 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_scores: {
+        Row: {
+          created_at: string
+          criticality: string | null
+          fat_evolution: number | null
+          id: string
+          last_calculated_at: string | null
+          muscle_evolution: number | null
+          patient_id: string
+          rank_position: number | null
+          score: number
+          updated_at: string
+          weight_evolution: number | null
+        }
+        Insert: {
+          created_at?: string
+          criticality?: string | null
+          fat_evolution?: number | null
+          id?: string
+          last_calculated_at?: string | null
+          muscle_evolution?: number | null
+          patient_id: string
+          rank_position?: number | null
+          score?: number
+          updated_at?: string
+          weight_evolution?: number | null
+        }
+        Update: {
+          created_at?: string
+          criticality?: string | null
+          fat_evolution?: number | null
+          id?: string
+          last_calculated_at?: string | null
+          muscle_evolution?: number | null
+          patient_id?: string
+          rank_position?: number | null
+          score?: number
+          updated_at?: string
+          weight_evolution?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_scores_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: true
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address: string | null
@@ -449,6 +499,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_patient_score: {
+        Args: { p_patient_id: string }
+        Returns: number
+      }
+      get_leaderboard_top3: {
+        Args: never
+        Returns: {
+          patient_name: string
+          rank_position: number
+          score: number
+        }[]
+      }
       get_user_person_for_user: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -458,6 +520,7 @@ export type Database = {
         Returns: boolean
       }
       is_master: { Args: { _user_id: string }; Returns: boolean }
+      update_leaderboard_rankings: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "viewer"
