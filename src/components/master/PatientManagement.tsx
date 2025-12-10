@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { 
   Search, Edit, Trash2, Eye, TrendingUp, TrendingDown,
-  UserPlus, MoreVertical, Key, Power, PowerOff
+  UserPlus, MoreVertical, Key, Power, PowerOff, Filter, UserCheck, Calendar
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -32,6 +32,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface Patient {
   id: string;
@@ -64,10 +69,19 @@ const PatientManagement = ({ patients, searchQuery, setSearchQuery, onRefresh }:
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [createAccountDialogOpen, setCreateAccountDialogOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [newAccountEmail, setNewAccountEmail] = useState("");
+  const [newAccountPassword, setNewAccountPassword] = useState("");
+  
+  // Filter states
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [evolutionFilter, setEvolutionFilter] = useState<string>("all");
+  const [periodFilter, setPeriodFilter] = useState<string>("all");
   
   // Form state
   const [formData, setFormData] = useState({
@@ -80,6 +94,50 @@ const PatientManagement = ({ patients, searchQuery, setSearchQuery, onRefresh }:
     medical_notes: "",
     status: "active"
   });
+
+  // Apply filters
+  const filteredPatients = useMemo(() => {
+    let result = patients;
+
+    // Status filter
+    if (statusFilter !== "all") {
+      result = result.filter(p => p.status === statusFilter);
+    }
+
+    // Evolution filter
+    if (evolutionFilter !== "all") {
+      result = result.filter(p => {
+        if (evolutionFilter === "lost") return (p.weightChange ?? 0) < 0;
+        if (evolutionFilter === "gained") return (p.weightChange ?? 0) > 0;
+        if (evolutionFilter === "stable") return (p.weightChange ?? 0) === 0;
+        return true;
+      });
+    }
+
+    // Period filter
+    if (periodFilter !== "all") {
+      const now = new Date();
+      result = result.filter(p => {
+        const createdAt = new Date(p.created_at);
+        const diffDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+        if (periodFilter === "week") return diffDays <= 7;
+        if (periodFilter === "month") return diffDays <= 30;
+        if (periodFilter === "quarter") return diffDays <= 90;
+        return true;
+      });
+    }
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(query) || 
+        p.email?.toLowerCase().includes(query)
+      );
+    }
+
+    return result;
+  }, [patients, statusFilter, evolutionFilter, periodFilter, searchQuery]);
 
   const resetForm = () => {
     setFormData({
@@ -246,6 +304,53 @@ const PatientManagement = ({ patients, searchQuery, setSearchQuery, onRefresh }:
     }
   };
 
+  const handleCreateAccount = async () => {
+    if (!selectedPatient) return;
+
+    if (!newAccountEmail || !newAccountPassword) {
+      toast.error("Email e senha são obrigatórios");
+      return;
+    }
+
+    if (newAccountPassword.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-user-account", {
+        body: { 
+          email: newAccountEmail, 
+          password: newAccountPassword, 
+          patientId: selectedPatient.id 
+        }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast.success("Conta de usuário criada com sucesso!");
+      setCreateAccountDialogOpen(false);
+      setNewAccountEmail("");
+      setNewAccountPassword("");
+      setSelectedPatient(null);
+      onRefresh();
+    } catch (error) {
+      console.error("Error creating account:", error);
+      toast.error(error instanceof Error ? error.message : "Erro ao criar conta");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const openCreateAccountDialog = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setNewAccountEmail(patient.email || "");
+    setNewAccountPassword("");
+    setCreateAccountDialogOpen(true);
+  };
+
   const openPasswordDialog = (patient: Patient) => {
     setSelectedPatient(patient);
     setNewPassword("");
@@ -271,50 +376,127 @@ const PatientManagement = ({ patients, searchQuery, setSearchQuery, onRefresh }:
   return (
     <Card className="card-elevated">
       <CardHeader className="pb-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <CardTitle className="text-xl font-serif">Gerenciar Pacientes</CardTitle>
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1 md:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar paciente..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 rounded-xl"
-              />
-            </div>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="gradient-primary rounded-xl" onClick={resetForm}>
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  Novo Paciente
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Adicionar Paciente</DialogTitle>
-                </DialogHeader>
-                <PatientForm 
-                  formData={formData} 
-                  setFormData={setFormData}
-                  onSubmit={handleAddPatient}
-                  isLoading={isLoading}
-                  submitLabel="Adicionar"
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <CardTitle className="text-xl font-serif">Gerenciar Pacientes</CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar paciente..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 rounded-xl"
                 />
-              </DialogContent>
-            </Dialog>
+              </div>
+              <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" className="rounded-xl">
+                    <Filter className="w-4 h-4 mr-2" />
+                    Filtros
+                  </Button>
+                </CollapsibleTrigger>
+              </Collapsible>
+              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gradient-primary rounded-xl" onClick={resetForm}>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Novo Paciente
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Adicionar Paciente</DialogTitle>
+                  </DialogHeader>
+                  <PatientForm 
+                    formData={formData} 
+                    setFormData={setFormData}
+                    onSubmit={handleAddPatient}
+                    isLoading={isLoading}
+                    submitLabel="Adicionar"
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
+          
+          {/* Advanced Filters */}
+          <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <CollapsibleContent>
+              <div className="flex flex-wrap gap-4 p-4 bg-muted/30 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-muted-foreground whitespace-nowrap">Status:</Label>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-32 rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="active">Ativos</SelectItem>
+                      <SelectItem value="inactive">Inativos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-muted-foreground whitespace-nowrap">Evolução:</Label>
+                  <Select value={evolutionFilter} onValueChange={setEvolutionFilter}>
+                    <SelectTrigger className="w-36 rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="lost">Perderam peso</SelectItem>
+                      <SelectItem value="gained">Ganharam peso</SelectItem>
+                      <SelectItem value="stable">Estável</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-muted-foreground whitespace-nowrap">
+                    <Calendar className="w-4 h-4 inline mr-1" />
+                    Período:
+                  </Label>
+                  <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                    <SelectTrigger className="w-36 rounded-xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="week">Última semana</SelectItem>
+                      <SelectItem value="month">Último mês</SelectItem>
+                      <SelectItem value="quarter">Últimos 3 meses</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setStatusFilter("all");
+                    setEvolutionFilter("all");
+                    setPeriodFilter("all");
+                  }}
+                  className="ml-auto"
+                >
+                  Limpar filtros
+                </Button>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       </CardHeader>
       <CardContent>
-        {patients.length === 0 ? (
+        <div className="mb-4 text-sm text-muted-foreground">
+          {filteredPatients.length} paciente(s) encontrado(s)
+        </div>
+        {filteredPatients.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <UserPlus className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p>Nenhum paciente encontrado</p>
           </div>
         ) : (
           <div className="grid gap-4">
-            {patients.map((patient) => (
+            {filteredPatients.map((patient) => (
               <div
                 key={patient.id}
                 className="flex items-center justify-between p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors"
@@ -332,6 +514,12 @@ const PatientManagement = ({ patients, searchQuery, setSearchQuery, onRefresh }:
                       <Badge variant={patient.status === "active" ? "default" : "secondary"}>
                         {patient.status === "active" ? "Ativo" : "Inativo"}
                       </Badge>
+                      {patient.user_id && (
+                        <Badge variant="outline" className="text-xs">
+                          <UserCheck className="w-3 h-3 mr-1" />
+                          Com login
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-sm text-muted-foreground">
                       {patient.email || "Sem email"}
@@ -378,10 +566,17 @@ const PatientManagement = ({ patients, searchQuery, setSearchQuery, onRefresh }:
                         <Edit className="w-4 h-4 mr-2" />
                         Editar
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => openPasswordDialog(patient)}>
-                        <Key className="w-4 h-4 mr-2" />
-                        Alterar Senha
-                      </DropdownMenuItem>
+                      {patient.user_id ? (
+                        <DropdownMenuItem onClick={() => openPasswordDialog(patient)}>
+                          <Key className="w-4 h-4 mr-2" />
+                          Alterar Senha
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={() => openCreateAccountDialog(patient)}>
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Criar Conta de Acesso
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => handleToggleStatus(patient)}>
                         {patient.status === "active" ? (
                           <>
@@ -500,6 +695,54 @@ const PatientManagement = ({ patients, searchQuery, setSearchQuery, onRefresh }:
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Create Account Dialog */}
+      <Dialog open={createAccountDialogOpen} onOpenChange={setCreateAccountDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Criar Conta de Acesso</DialogTitle>
+            <DialogDescription>
+              Criar conta de login para {selectedPatient?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="accountEmail">Email de Acesso</Label>
+              <Input
+                id="accountEmail"
+                type="email"
+                value={newAccountEmail}
+                onChange={(e) => setNewAccountEmail(e.target.value)}
+                placeholder="email@exemplo.com"
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="accountPassword">Senha</Label>
+              <Input
+                id="accountPassword"
+                type="password"
+                value={newAccountPassword}
+                onChange={(e) => setNewAccountPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                className="rounded-xl"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateAccountDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleCreateAccount} 
+              disabled={isLoading || !newAccountEmail || newAccountPassword.length < 6}
+              className="gradient-primary"
+            >
+              {isLoading ? "Criando..." : "Criar Conta"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
