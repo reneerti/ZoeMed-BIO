@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Activity, Eye, EyeOff, Smartphone, UserPlus } from "lucide-react";
+import { Eye, EyeOff, Smartphone, UserPlus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import logo from "@/assets/logo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -63,13 +64,13 @@ const Login = () => {
     <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-slide-up">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full gradient-primary mb-4 animate-pulse-glow">
-            <Activity className="w-10 h-10 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img src={logo} alt="ZOEMEDBio" className="h-24 object-contain" />
           </div>
           <h1 className="text-4xl font-serif font-bold text-foreground mb-2">
-            ZoeBio
+            ZOEMEDBio
           </h1>
-          <p className="text-muted-foreground text-lg">Monitoramento de Saúde</p>
+          <p className="text-muted-foreground text-lg">Bioimpedância Inteligente</p>
         </div>
 
         <Card className="card-elevated border-0 overflow-hidden">

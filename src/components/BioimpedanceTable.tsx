@@ -31,7 +31,15 @@ interface BioimpedanceRecord {
 
 interface Props {
   records: BioimpedanceRecord[];
-  isReneer: boolean;
+  isReneer?: boolean;
+  isMale?: boolean;
+}
+
+// Alternative simplified props for backward compatibility
+interface DataProps {
+  data?: BioimpedanceRecord[];
+  userPerson?: string;
+  isAdmin?: boolean;
 }
 
 // Parâmetros de referência baseados no protocolo
@@ -73,9 +81,15 @@ const columns: { key: ColumnKey; label: string; format: (v: number | null) => st
   { key: "whr", label: "WHR", format: (v) => v?.toFixed(2) || "-" },
 ];
 
-const BioimpedanceTable = ({ records, isReneer }: Props) => {
+const BioimpedanceTable = (props: Props | DataProps) => {
+  // Handle both prop formats for backward compatibility
+  const records = 'records' in props ? props.records : (props as DataProps).data || [];
+  const isReneer = 'isReneer' in props ? props.isReneer : 
+                   'isMale' in props ? props.isMale :
+                   'userPerson' in props ? (props as DataProps).userPerson === 'reneer' : true;
+  
   const [expandedCols, setExpandedCols] = useState<Set<ColumnKey>>(new Set());
-  const params = getParams(isReneer);
+  const params = getParams(!!isReneer);
 
   const toggleColumn = (key: ColumnKey) => {
     setExpandedCols((prev) => {

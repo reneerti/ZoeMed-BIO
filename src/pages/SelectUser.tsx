@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, TrendingDown, TrendingUp, Scale, Activity, Plus, BarChart3, Camera, Upload, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, TrendingDown, TrendingUp, Scale, Activity, Plus, BarChart3, Camera, Upload, Sparkles, Loader2, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import ComparativeCharts from "@/components/ComparativeCharts";
@@ -11,6 +11,7 @@ import NotificationCenter from "@/components/NotificationCenter";
 import { toast } from "sonner";
 import reneerAvatar from "@/assets/reneer-avatar.png";
 import anaPaulaAvatar from "@/assets/ana-paula-avatar.png";
+import logo from "@/assets/logo.png";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 
@@ -390,6 +391,14 @@ const SelectUser = () => {
             {isAdmin && (
               <>
                 <Button
+                  variant="default"
+                  className="gap-2 bg-gradient-to-r from-blue-600 to-blue-800"
+                  onClick={() => navigate("/master")}
+                >
+                  <Users className="w-4 h-4" />
+                  Painel Master
+                </Button>
+                <Button
                   variant="outline"
                   className="gap-2"
                   onClick={() => navigate("/upload")}
@@ -407,14 +416,28 @@ const SelectUser = () => {
                 </Button>
               </>
             )}
+                  <Upload className="w-4 h-4" />
+                  Upload
+                </Button>
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => navigate("/adicionar")}
+                >
+                  <Plus className="w-4 h-4" />
+                  Adicionar
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
         <div className="text-center mb-10 animate-fade-in">
+          <img src={logo} alt="ZOEMEDBio" className="h-16 mx-auto mb-4" />
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-2">
-            Resumo Health
+            ZOEMEDBio
           </h1>
-          <p className="text-lg text-muted-foreground">Família de Jesus</p>
+          <p className="text-lg text-muted-foreground">Bioimpedância Inteligente</p>
         </div>
 
         {showComparison && comparisonData ? (

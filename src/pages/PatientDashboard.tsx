@@ -229,9 +229,8 @@ const PatientDashboard = () => {
               </CardHeader>
               <CardContent className="p-0">
                 <BioimpedanceTable 
-                  data={bioData} 
-                  userPerson={patient.gender === "male" ? "reneer" : "ana_paula"}
-                  isAdmin={isAdmin}
+                  records={bioData as any} 
+                  isMale={patient.gender === "male"}
                 />
               </CardContent>
             </Card>
@@ -244,8 +243,22 @@ const PatientDashboard = () => {
           <TabsContent value="goals">
             <GoalsProgress 
               userPerson={patient.gender === "male" ? "reneer" : "ana_paula"}
-              latestData={latestRecord}
+              currentMetrics={{
+                weight: latestRecord?.weight ?? null,
+                body_fat_percent: latestRecord?.body_fat_percent ?? null,
+                muscle_rate_percent: latestRecord?.muscle_rate_percent ?? null,
+                visceral_fat: latestRecord?.visceral_fat ?? null,
+                bmi: latestRecord?.bmi ?? null
+              }}
+              initialMetrics={{
+                weight: bioData[bioData.length - 1]?.weight ?? null,
+                body_fat_percent: bioData[bioData.length - 1]?.body_fat_percent ?? null,
+                muscle_rate_percent: bioData[bioData.length - 1]?.muscle_rate_percent ?? null,
+                visceral_fat: bioData[bioData.length - 1]?.visceral_fat ?? null,
+                bmi: bioData[bioData.length - 1]?.bmi ?? null
+              }}
               isAdmin={isAdmin}
+              isMale={patient.gender === "male"}
             />
           </TabsContent>
         </Tabs>
@@ -253,8 +266,16 @@ const PatientDashboard = () => {
         {/* Radar Chart */}
         {latestRecord && (
           <MetricsRadarChart 
-            data={latestRecord}
-            userPerson={patient.gender === "male" ? "reneer" : "ana_paula"}
+            currentMetrics={{
+              bmi: latestRecord?.bmi,
+              body_fat_percent: latestRecord?.body_fat_percent,
+              muscle_rate_percent: latestRecord?.muscle_rate_percent,
+              visceral_fat: latestRecord?.visceral_fat,
+              body_water_percent: (latestRecord as any)?.body_water_percent,
+              protein_percent: (latestRecord as any)?.protein_percent
+            }}
+            historicalRecords={bioData as any}
+            isMale={patient.gender === "male"}
           />
         )}
       </main>

@@ -18,6 +18,9 @@ import { supabase } from "@/integrations/supabase/client";
 import PatientManagement from "@/components/master/PatientManagement";
 import MasterReports from "@/components/master/MasterReports";
 import CustomFieldsConfig from "@/components/master/CustomFieldsConfig";
+import GamificationDashboard from "@/components/master/GamificationDashboard";
+import PdfReportGenerator from "@/components/master/PdfReportGenerator";
+import logo from "@/assets/logo.png";
 
 interface Patient {
   id: string;
@@ -167,15 +170,15 @@ const MasterDashboard = () => {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center">
-                  <Activity className="w-5 h-5 text-primary-foreground" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-serif font-bold">ZoeBio Master</h1>
-                  <p className="text-xs text-muted-foreground">Painel Administrativo</p>
-                </div>
+              <img src={logo} alt="ZOEMEDBio" className="h-10 object-contain" />
+              <div>
+                <h1 className="text-xl font-serif font-bold">ZOEMEDBio Master</h1>
+                <p className="text-xs text-muted-foreground">Painel Administrativo</p>
               </div>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <PdfReportGenerator patients={patients} />
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               <LogOut className="w-4 h-4 mr-2" />
               Sair
@@ -249,6 +252,10 @@ const MasterDashboard = () => {
               <Users className="w-4 h-4" />
               Pacientes
             </TabsTrigger>
+            <TabsTrigger value="gamification" className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Gamificação
+            </TabsTrigger>
             <TabsTrigger value="reports" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Relatórios
@@ -258,6 +265,28 @@ const MasterDashboard = () => {
               Configurações
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="patients">
+            <PatientManagement 
+              patients={filteredPatients} 
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              onRefresh={loadData}
+            />
+          </TabsContent>
+
+          <TabsContent value="gamification">
+            <GamificationDashboard patients={patients} />
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <MasterReports patients={patients} />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <CustomFieldsConfig />
+          </TabsContent>
+        </Tabs>
 
           <TabsContent value="patients">
             <PatientManagement 

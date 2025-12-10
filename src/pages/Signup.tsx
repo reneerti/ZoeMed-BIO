@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Activity, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import logo from "@/assets/logo.png";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -45,16 +46,18 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      const { error: signUpError, data } = await signUp(email, password);
+      const result = await signUp(email, password);
       
-      if (signUpError) {
-        if (signUpError.message.includes("already registered")) {
+      if (result.error) {
+        if (result.error.message.includes("already registered")) {
           toast.error("Este email já está cadastrado");
         } else {
-          toast.error(signUpError.message || "Erro ao criar conta");
+          toast.error(result.error.message || "Erro ao criar conta");
         }
         return;
       }
+
+      const data = result.data;
 
       // Create patient record
       if (data?.user) {
@@ -90,11 +93,11 @@ const Signup = () => {
     <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
       <div className="w-full max-w-md animate-slide-up">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full gradient-primary mb-4">
-            <Activity className="w-8 h-8 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img src={logo} alt="ZOEMEDBio" className="h-20 object-contain" />
           </div>
           <h1 className="text-3xl font-serif font-bold text-foreground mb-2">
-            ZoeBio
+            ZOEMEDBio
           </h1>
           <p className="text-muted-foreground">Crie sua conta</p>
         </div>
