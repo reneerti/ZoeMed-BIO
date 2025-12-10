@@ -67,6 +67,7 @@ export type Database = {
           monjaro_dose: number | null
           muscle_mass: number | null
           muscle_rate_percent: number | null
+          patient_id: string | null
           protein_mass: number | null
           protein_percent: number | null
           skeletal_muscle_percent: number | null
@@ -95,6 +96,7 @@ export type Database = {
           monjaro_dose?: number | null
           muscle_mass?: number | null
           muscle_rate_percent?: number | null
+          patient_id?: string | null
           protein_mass?: number | null
           protein_percent?: number | null
           skeletal_muscle_percent?: number | null
@@ -123,6 +125,7 @@ export type Database = {
           monjaro_dose?: number | null
           muscle_mass?: number | null
           muscle_rate_percent?: number | null
+          patient_id?: string | null
           protein_mass?: number | null
           protein_percent?: number | null
           skeletal_muscle_percent?: number | null
@@ -135,7 +138,92 @@ export type Database = {
           weight?: number | null
           whr?: number | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "bioimpedance_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_fields_config: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          field_label: string
+          field_name: string
+          field_type: string
+          id: string
+          is_required: boolean | null
+          options: Json | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          field_label: string
+          field_name: string
+          field_type: string
+          id?: string
+          is_required?: boolean | null
+          options?: Json | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          field_label?: string
+          field_name?: string
+          field_type?: string
+          id?: string
+          is_required?: boolean | null
+          options?: Json | null
+        }
         Relationships: []
+      }
+      monjaro_treatments: {
+        Row: {
+          application_date: string
+          created_at: string
+          dose: number
+          id: string
+          notes: string | null
+          patient_id: string
+          side_effects: string | null
+          updated_at: string
+          week_number: number | null
+        }
+        Insert: {
+          application_date: string
+          created_at?: string
+          dose: number
+          id?: string
+          notes?: string | null
+          patient_id: string
+          side_effects?: string | null
+          updated_at?: string
+          week_number?: number | null
+        }
+        Update: {
+          application_date?: string
+          created_at?: string
+          dose?: number
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          side_effects?: string | null
+          updated_at?: string
+          week_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monjaro_treatments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -179,6 +267,63 @@ export type Database = {
           old_value?: number | null
           title?: string
           user_person?: string
+        }
+        Relationships: []
+      }
+      patients: {
+        Row: {
+          address: string | null
+          avatar_url: string | null
+          birth_date: string | null
+          created_at: string
+          created_by: string | null
+          custom_fields: Json | null
+          email: string | null
+          gender: string | null
+          height: number | null
+          id: string
+          medical_notes: string | null
+          name: string
+          phone: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          avatar_url?: string | null
+          birth_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json | null
+          email?: string | null
+          gender?: string | null
+          height?: number | null
+          id?: string
+          medical_notes?: string | null
+          name: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          avatar_url?: string | null
+          birth_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          custom_fields?: Json | null
+          email?: string | null
+          gender?: string | null
+          height?: number | null
+          id?: string
+          medical_notes?: string | null
+          name?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -311,6 +456,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_master: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "viewer"

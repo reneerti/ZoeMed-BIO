@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Heart, Upload, Eye, EyeOff, Smartphone } from "lucide-react";
+import { Activity, Eye, EyeOff, Smartphone, UserPlus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const Login = () => {
@@ -14,7 +14,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { signIn, signUp, user, loading } = useAuth();
+  const { signIn, user, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && user) {
@@ -64,12 +64,12 @@ const Login = () => {
       <div className="w-full max-w-md animate-slide-up">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full gradient-primary mb-4 animate-pulse-glow">
-            <Heart className="w-10 h-10 text-primary-foreground" />
+            <Activity className="w-10 h-10 text-primary-foreground" />
           </div>
           <h1 className="text-4xl font-serif font-bold text-foreground mb-2">
-            Resumo Health
+            ZoeBio
           </h1>
-          <p className="text-muted-foreground text-lg">Família de Jesus</p>
+          <p className="text-muted-foreground text-lg">Monitoramento de Saúde</p>
         </div>
 
         <Card className="card-elevated border-0 overflow-hidden">
@@ -131,10 +131,10 @@ const Login = () => {
               <Button
                 variant="outline"
                 className="w-full h-12 rounded-xl"
-                onClick={() => navigate("/upload")}
+                onClick={() => navigate("/cadastro")}
               >
-                <Upload className="w-5 h-5 mr-2" />
-                Upload de Bioimpedância
+                <UserPlus className="w-5 h-5 mr-2" />
+                Criar Conta
               </Button>
               <Button
                 variant="ghost"
