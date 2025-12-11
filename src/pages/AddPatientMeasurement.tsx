@@ -9,7 +9,7 @@ import { ArrowLeft, Save, Upload, Camera, Loader2, FileText } from "lucide-react
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import logo from "@/assets/logo.png";
+import splashLogo from "@/assets/zoemedbio-splash-logo.png";
 
 interface Patient {
   id: string;
@@ -256,7 +256,7 @@ const AddPatientMeasurement = () => {
             <ArrowLeft className="w-4 h-4" />
             Voltar
           </Button>
-          <img src={logo} alt="ZOEMEDBio" className="h-8" />
+          <img src={splashLogo} alt="ZOEMEDBio" className="h-10" />
         </div>
 
         <Card className="card-elevated border-0">
