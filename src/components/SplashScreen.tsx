@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import logo from "@/assets/logo.png";
+import splashLogo from "@/assets/zoemedbio-splash-logo.png";
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -67,13 +67,13 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
             }}
             className="relative z-10 flex flex-col items-center"
           >
-            {/* Logo container with glow effect */}
+            {/* Logo with glow effect */}
             <motion.div
               animate={{
-                boxShadow: [
-                  "0 0 30px rgba(255,255,255,0.2)",
-                  "0 0 60px rgba(255,255,255,0.4)",
-                  "0 0 30px rgba(255,255,255,0.2)",
+                filter: [
+                  "drop-shadow(0 0 20px rgba(255,255,255,0.3))",
+                  "drop-shadow(0 0 40px rgba(255,255,255,0.5))",
+                  "drop-shadow(0 0 20px rgba(255,255,255,0.3))",
                 ],
               }}
               transition={{
@@ -81,35 +81,14 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
-              className="w-32 h-32 sm:w-40 sm:h-40 rounded-3xl bg-white/10 backdrop-blur-sm p-4 flex items-center justify-center"
+              className="max-w-xs sm:max-w-sm md:max-w-md"
             >
               <img
-                src={logo}
-                alt="ZOEMEDBio"
-                className="w-full h-full object-contain drop-shadow-2xl"
+                src={splashLogo}
+                alt="ZOEMEDBio - Saúde Inteligente"
+                className="w-full h-auto object-contain"
               />
             </motion.div>
-
-            {/* App name */}
-            <motion.h1
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="mt-6 text-4xl sm:text-5xl font-bold text-white tracking-wide"
-              style={{ fontFamily: "'Cormorant Garamond', serif" }}
-            >
-              ZOEMEDBio
-            </motion.h1>
-
-            {/* Tagline */}
-            <motion.p
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.7, duration: 0.5 }}
-              className="mt-2 text-white/80 text-sm sm:text-base tracking-widest uppercase"
-            >
-              Bioimpedância Inteligente
-            </motion.p>
 
             {/* Loading indicator */}
             <motion.div
