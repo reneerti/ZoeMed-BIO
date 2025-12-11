@@ -67,27 +67,70 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
             }}
             className="relative z-10 flex flex-col items-center"
           >
-            {/* Logo with glow effect */}
+            {/* Logo with enhanced animations */}
             <motion.div
-              animate={{
-                filter: [
-                  "drop-shadow(0 0 20px rgba(255,255,255,0.3))",
-                  "drop-shadow(0 0 40px rgba(255,255,255,0.5))",
-                  "drop-shadow(0 0 20px rgba(255,255,255,0.3))",
-                ],
-              }}
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
               transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
+                type: "spring",
+                stiffness: 150,
+                damping: 15,
+                delay: 0.3,
               }}
-              className="max-w-xs sm:max-w-sm md:max-w-md"
+              className="relative"
             >
-              <img
-                src={splashLogo}
-                alt="ZOEMEDBio - Saúde Inteligente"
-                className="w-full h-auto object-contain"
+              {/* Pulse rings */}
+              <motion.div
+                animate={{
+                  scale: [1, 1.3, 1],
+                  opacity: [0.5, 0, 0.5],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="absolute inset-0 rounded-full border-2 border-white/30"
+                style={{ margin: "-20px" }}
               />
+              <motion.div
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [0.3, 0, 0.3],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5,
+                }}
+                className="absolute inset-0 rounded-full border-2 border-white/20"
+                style={{ margin: "-40px" }}
+              />
+              
+              {/* Main logo with glow and pulse */}
+              <motion.div
+                animate={{
+                  filter: [
+                    "drop-shadow(0 0 20px rgba(255,255,255,0.3))",
+                    "drop-shadow(0 0 50px rgba(255,255,255,0.6))",
+                    "drop-shadow(0 0 20px rgba(255,255,255,0.3))",
+                  ],
+                  scale: [1, 1.05, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="max-w-xs sm:max-w-sm md:max-w-md"
+              >
+                <img
+                  src={splashLogo}
+                  alt="ZOEMEDBio - Saúde Inteligente"
+                  className="w-full h-auto object-contain"
+                />
+              </motion.div>
             </motion.div>
 
             {/* Loading indicator */}
