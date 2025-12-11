@@ -11,7 +11,7 @@ import NotificationCenter from "@/components/NotificationCenter";
 import { toast } from "sonner";
 import reneerAvatar from "@/assets/reneer-avatar.png";
 import anaPaulaAvatar from "@/assets/ana-paula-avatar.png";
-import logo from "@/assets/logo.png";
+import splashLogo from "@/assets/zoemedbio-splash-logo.png";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 
@@ -414,11 +414,7 @@ const SelectUser = () => {
         </div>
 
         <div className="text-center mb-10 animate-fade-in">
-          <img src={logo} alt="ZOEMEDBio" className="h-16 mx-auto mb-4" />
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-foreground mb-2">
-            ZOEMEDBio
-          </h1>
-          <p className="text-lg text-muted-foreground">Bioimpedância Inteligente</p>
+          <img src={splashLogo} alt="ZOEMEDBio" className="h-24 sm:h-28 mx-auto" />
         </div>
 
         {showComparison && comparisonData ? (

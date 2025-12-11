@@ -8,7 +8,7 @@ import { FileText, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import logo from "@/assets/logo.png";
+import splashLogo from "@/assets/zoemedbio-splash-logo.png";
 
 interface Patient {
   id: string;
@@ -59,7 +59,7 @@ const PdfReportGenerator = ({ patients }: PdfReportGeneratorProps) => {
         // Add logo
         try {
           const img = new Image();
-          img.src = logo;
+          img.src = splashLogo;
           await new Promise((resolve) => {
             img.onload = resolve;
           });
